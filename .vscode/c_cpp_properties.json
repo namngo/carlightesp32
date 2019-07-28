@@ -101,9 +101,7 @@
             "browse": {
                 "path": [
                     "${workspaceRoot}",
-              
                     "${workspaceRoot}/build",
-              
                     "${env:IDF_PATH}/components/bt/bluedroid/stack/smp/include",
                     "${env:IDF_PATH}/components/bt/bluedroid/stack/sdp/include",
                     "${env:IDF_PATH}/components/bt/bluedroid/stack/rfcomm/include",
@@ -194,13 +192,13 @@
                     "${env:IDF_PATH}/components/wpa_supplicant/include/wpa2/tls",
                     "${env:IDF_PATH}/components/wpa_supplicant/include/wpa2/utils",
                     "${env:IDF_PATH}/components/xtensa-debug-module/include"
-                    
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": "${workspaceRoot}/.vscode/browse.vc.db"
             },
             "cStandard": "c11",
-            "cppStandard": "c++17"
+            "cppStandard": "c++17",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
         }
     ],
     "version": 4
