@@ -1,0 +1,1 @@
+cmd='C:/Program Files/CMake/bin/cmake.exe;-DSDKCONFIG=F:/repo/carlightesp32/sdkconfig;-DIDF_PATH=F:/repo/library/esp-idf;-DEXTRA_COMPONENT_DIRS=F:/repo/library/esp-idf/components/bootloader;-GNinja;<SOURCE_DIR><SOURCE_SUBDIR>'
