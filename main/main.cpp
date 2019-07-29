@@ -1,9 +1,8 @@
-
 #include "Arduino.h"
 
-#include <NeoPixelBus.h>
-#include <NeoPixelBrightnessBus.h>
-#include <NeoPixelAnimator.h>
+// #include <NeoPixelBus.h>
+// #include <NeoPixelBrightnessBus.h>
+// #include <NeoPixelAnimator.h>
 
 #define LED_BUILTIN 2
 
