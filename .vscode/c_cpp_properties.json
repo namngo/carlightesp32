@@ -4,6 +4,7 @@
             "name": "ESP32-Win",
             "includePath": [
                 "${workspaceRoot}",
+                "${workspaceRoot}/components/arduino",
                 "${workspaceRoot}/build",
                 "${env:IDF_PATH}/components/bt/bluedroid/stack/smp/include",
                 "${env:IDF_PATH}/components/bt/bluedroid/stack/sdp/include",
@@ -102,6 +103,7 @@
                 "path": [
                     "${workspaceRoot}",
                     "${workspaceRoot}/build",
+                    "${workspaceRoot}/components/arduino",
                     "${env:IDF_PATH}/components/bt/bluedroid/stack/smp/include",
                     "${env:IDF_PATH}/components/bt/bluedroid/stack/sdp/include",
                     "${env:IDF_PATH}/components/bt/bluedroid/stack/rfcomm/include",
