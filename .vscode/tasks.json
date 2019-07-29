@@ -5,14 +5,20 @@
     "tasks": [
         {
             "label": "build app",
-            "command": "idf.py",
+            "command": "python",
             "type": "shell",
             "args": [
-                "build"
+                "F:\\repo\\library\\esp-idf\\tools\\idf.py",
+                "build",
+                "--project-dir",
+                "${workspaceRoot}"
             ],
             "presentation": {
                 "reveal": "always",
                 "echo": true
+            },
+            "options": {
+                "cwd": "${workspaceRoot}/"
             },
             "problemMatcher": {
                 "owner": "cpp",
@@ -33,10 +39,13 @@
         },
         {
             "label": "clean app",
-            "command": "idf.py",
+            "command": "python",
             "type": "shell",
             "args": [
-                "clean"
+                "F:\\repo\\library\\esp-idf\\tools\\idf.py",
+                "clean",
+                "--project-dir",
+                "${workspaceRoot}"
             ],
             "presentation": {
                 "reveal": "always"
@@ -44,12 +53,15 @@
         },
         {
             "label": "flash app",
-            "command": "idf.py",
+            "command": "python",
             "type": "shell",
             "args": [
+                "F:\\repo\\library\\esp-idf\\tools\\idf.py",
+                "flash",
+                "--project-dir",
+                "${workspaceRoot}",
                 "-p",
-                "COM3",
-                "flash"
+                "COM3"
             ],
             "presentation": {
                 "reveal": "always"
