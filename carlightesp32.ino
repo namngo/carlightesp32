@@ -39,6 +39,8 @@
 #include <string>
 #include <SPIFFS.h>
 
+using namespace std;
+
 const byte DNS_PORT = 53;
 
 const uint16_t PixelCount = 6;
@@ -49,7 +51,7 @@ const char WiFiAPPSK[] = "hondaaccord";
 const char indexHtmlPath[] = "/index.html";
 
 NeoPixelBus<NeoGrbwFeature, Neo800KbpsMethod> strip(PixelCount, LedOutGPIO);
-RgbwColor black(128, 128, 128, 128);
+RgbwColor black(0);
 
 IPAddress apIP(192, 168, 4, 1);
 DNSServer dnsServer;
@@ -117,20 +119,45 @@ void handleColorChangeRequest()
     server.send(200, "application/json", buildJsonResponse(color.R, color.B, color.G, color.W));
 }
 
+void listDir(char * dir){
+ 
+  File root = SPIFFS.open(dir);
+ 
+  File file = root.openNextFile();
+ 
+  while(file){
+ 
+      Serial.print("FILE: ");
+      Serial.println(file.name());
+ 
+      file = root.openNextFile();
+  }
+ 
+}
+
 #define LED_BUILTIN 2
 // the setup function runs once when you press reset or power the board
 void setup() {
-  // initialize digital pin LED_BUILTIN as an output.
-  strip.Begin();
-  strip.ClearTo(black);
-  strip.Show();
+  
+    SPIFFS.begin();
+    Serial.begin(115200);
 
-  WiFi.mode(WIFI_AP);
-  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-  WiFi.softAP(WiFiAPPID, WiFiAPPSK);
+     Serial.println();
+  
+    File root = SPIFFS.open("/");
+    listDir("/");
+    listDir("/static");
 
-  dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-  dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
+    strip.Begin();
+    strip.ClearTo(black);
+    strip.Show();
+
+    WiFi.mode(WIFI_AP);
+    WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+    WiFi.softAP(WiFiAPPID, WiFiAPPSK);
+
+    dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+    dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
 
   // setup the index.html
     if (SPIFFS.begin() && SPIFFS.exists(indexHtmlPath))
@@ -142,19 +169,30 @@ void setup() {
         }
     }
 
-    server.serveStatic("/static", SPIFFS, "/static", "max-age=86400");
+    //server.serveStatic("/static", SPIFFS, "/static", "max-age=86400");
+    server.serveStatic("/static/jquery-3.2.1.min.js", SPIFFS, "/static/jquery-3.2.1.min.js", "max-age=86400");
+    server.serveStatic("/static/colorpicker.min.js", SPIFFS, "/static/colorpicker.min.js", "max-age=86400");
+    server.serveStatic("/static/colorpicker.min.css", SPIFFS, "/static/colorpicker.min.css", "max-age=86400");
+    server.serveStatic("/static/bootstrap.min.js", SPIFFS, "/static/bootstrap.min.js", "max-age=86400");
+    server.serveStatic("/static/bootstrap.min.css", SPIFFS, "/static/bootstrap.min.css", "max-age=86400");
 
     server.on("/led", handleColorChangeRequest);
 
-    server.onNotFound([]() {
+    server.on("/index.html", [] () {
         server.send(200, "text/html", responseHTML);
     });
+
+    // server.onNotFound([]() {
+        
+    // });
 
     server.begin();
 }
 
 // the loop function runs over and over again forever
 void loop() {
+    //listDir("/");
+    //listDir("/static");
   dnsServer.processNextRequest();
   server.handleClient();
 }
