@@ -1,4 +1,6 @@
+
 #include "Arduino.h"
+#include "Serial.h"
 
 // #include <NeoPixelBus.h>
 // #include <NeoPixelBrightnessBus.h>
@@ -11,8 +13,10 @@ void setup(){
 }
 
 void loop(){
+    Serial.begin(9600);
     digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-    delay(10000);                       // wait for a second
+    delay(1000);                       // wait for a second
     digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-    delay(10000);  
+    delay(1000);  
+    
 }
