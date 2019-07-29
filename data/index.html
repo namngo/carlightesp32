@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="static/jquery-3.2.1.min.js"></script>
+        <script src="static/bootstrap.min.js"></script>
+        <script src="static/colorpicker.min.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="static/colorpicker.min.css">
+    </head>
+    <body>
+        <style>
+            .inl-bl {
+                display: inline-block;
+            }
+            .colorpicker-2x .colorpicker-saturation {
+                width: 200px;
+                height: 200px;
+            }
+
+            .colorpicker-2x .colorpicker-hue,
+            .colorpicker-2x .colorpicker-alpha {
+                width: 30px;
+                height: 200px;
+            }
+
+            .colorpicker-2x .colorpicker-color,
+            .colorpicker-2x .colorpicker-color div {
+                height: 30px;
+            }
+        </style>
+
+         <h1>Hello</h1>
+
+        <div id="colorpicker" class="inl-bl">
+            
+        </div>
+        <div>
+        <button id="submitColorBtn">Submit</button>
+        <button id="offColorBtn">Off</button>
+        </div>
+        
+
+        <script type="text/javascript">
+            function submitColor() {
+                var color = $("#colorpicker").data().colorpicker.color.toRGB();
+                var url = "/led?red=" + color.r + "&blue=" + color.b + "&green=" + color.g + "&alpha=" + color.a;
+                $.get(url);
+            }
+
+            function turnOffLed() {
+                var url = "/led?red=0&blue=0&green=0&alpha=0";
+                $.get(url);
+            }
+
+            $(document).ready(function ()
+            {
+                 $('#colorpicker').colorpicker({
+                    container: true,
+                    inline: true,
+                    customClass: 'colorpicker-2x',
+                    sliders: {
+                        saturation: {
+                            maxLeft: 200,
+                            maxTop: 200
+                        },
+                        hue: {
+                            maxTop: 200
+                        },
+                        alpha: {
+                            maxTop: 200
+                        }
+                    }
+                });
+                $('#submitColorBtn').on('click', submitColor);
+                $('#offColorBtn').on('click', turnOffLed);
+            });
+        </script>
+
+    </body>
+</html>
