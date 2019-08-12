@@ -26,6 +26,7 @@
   http://www.arduino.cc/en/Tutorial/Blink
 */
 
+#include <sstream>
 #include "Arduino.h"
 
 #include <WiFi.h>
@@ -101,17 +102,32 @@ String buildJsonResponse(long red, long blue, long green, long alpha)
     return "{\"red\":\"" + String(red) + "\",\"blue\":\"" + String(blue) + "\",\"green\":\"" + String(green) + "\",\"alpha\":\"" + String(alpha) + "\"}";
 }
 
+void handleSerialRequest()
+{
+    while(Serial.available()) {
+        auto str = Serial.readString();
+        if (str.length() == 6) {
+            stringstream ss;
+            int num;
+            ss << str;
+            ss >> hex >> num;
+            int r = num / 0x10000;
+            int g = (num / 0x100) % 0x100;
+            int b = num % 0x100;
+            Serial.println(r);
+            Serial.println(g);
+            Serial.println(b);
+        }
+    }
+}
+
 void handleColorChangeRequest()
 {
     long red = server.arg("red").toInt();
     long blue = server.arg("blue").toInt();
     long green = server.arg("green").toInt();
     
-    
-
     RgbwColor color = rgbwFromRgb(red, green, blue);
-
-    //Serial.println("ir=" + String(red) + "ig=" + String(green) + "ib=" + String(blue) + "nr=" + String(color.R) + "ng=" + String(color.G) + "nb=" + String(color.B) + "nw=" + String(color.W));
 
     strip.ClearTo(color);
     strip.Show();
@@ -132,7 +148,6 @@ void listDir(char * dir){
  
       file = root.openNextFile();
   }
- 
 }
 
 #define LED_BUILTIN 2
@@ -141,13 +156,7 @@ void setup() {
   
     SPIFFS.begin();
     Serial.begin(115200);
-
-     Serial.println();
   
-    File root = SPIFFS.open("/");
-    listDir("/");
-    listDir("/static");
-
     strip.Begin();
     strip.ClearTo(black);
     strip.Show();
@@ -187,6 +196,8 @@ void setup() {
     // });
 
     server.begin();
+    
+    Serial.println();
 }
 
 // the loop function runs over and over again forever
@@ -195,4 +206,5 @@ void loop() {
     //listDir("/static");
   dnsServer.processNextRequest();
   server.handleClient();
+  handleSerialRequest();
 }
