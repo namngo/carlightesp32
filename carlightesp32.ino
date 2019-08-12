@@ -102,18 +102,34 @@ String buildJsonResponse(long red, long blue, long green, long alpha)
     return "{\"red\":\"" + String(red) + "\",\"blue\":\"" + String(blue) + "\",\"green\":\"" + String(green) + "\",\"alpha\":\"" + String(alpha) + "\"}";
 }
 
+template <class T>
+inline unsigned int toIntFromHexString(const T& t) {
+
+    unsigned int x;
+    std::stringstream ss;
+    ss << std::hex << t;
+    ss >> x;
+    return x;
+
+}
+
 void handleSerialRequest()
 {
     while(Serial.available()) {
         auto str = Serial.readString();
         if (str.length() == 6) {
-            stringstream ss;
-            int num;
-            ss << str;
-            ss >> hex >> num;
-            int r = num / 0x10000;
-            int g = (num / 0x100) % 0x100;
-            int b = num % 0x100;
+// int number = (int) strtol(str, NULL, 16);
+//             int r, g, b = 0;
+//             std::istringstream(str.substring(0,2)) >> std::hex >> r;
+//             std::istringstream(str.substring(2,2)) >> std::hex >> g;
+//             std::istringstream(str.substring(4,2)) >> std::hex >> b;
+
+//             // int num = stoi(str, 0, 16);
+
+//             // int r = num / 0x10000;
+//             // int g = (num / 0x100) % 0x100;
+//             // int b = num % 0x100;
+
             Serial.println(r);
             Serial.println(g);
             Serial.println(b);
@@ -196,7 +212,7 @@ void setup() {
     // });
 
     server.begin();
-    
+
     Serial.println();
 }
 
