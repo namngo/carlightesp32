@@ -1,3 +1,7 @@
+#ifndef ARDUINO_ARCH_ESP32
+#define ARDUINO_ARCH_ESP32
+#endif
+
 #include <NeoPixelAnimator.h>
 #include <NeoPixelBrightnessBus.h>
 #include <NeoPixelBus.h>
@@ -62,39 +66,54 @@ String responseHTML = ""
 "<!DOCTYPE html><html><head><title>CaptivePortal</title></head><body>"
 "<p>No index.html found.</p></body></html>";
 
-long min(long a, long b, long c)
+template <class T>
+T getMin(T a, T b, T c)
 {
     return std::min(a, std::min(b, c));
 }
 
-long max(long a, long b, long c)
+template <class T>
+T getMax(T a, T b, T c)
 {
     return std::max(a, std::max(b, c));
+}
+
+template <class T>
+T boundValue(T value, T min, T max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
 }
 
 // https://stackoverflow.com/questions/21117842/converting-an-rgbw-color-to-a-standard-rgb-hsb-rappresentation
 RgbwColor rgbwFromRgb(long ir, long ig, long ib)
 {
-   /* long M = max(ir, ig, ib);
-    long m = min(ir, ig, ib);
+    long tempMax = getMax(ir, ig, ib);
 
-    long w = M;
-    if (2 * m < M)
-    {
-        w = (m * M) / (M - m);
+    if (tempMax == 0) {
+        return RgbwColor(0);
     }
 
-    long Q = 64;
-    long K = (w + M) / m;
+    float mul = 255.0f / (float)tempMax;
+    float hR = ir * mul;
+    float hG = ig * mul;
+    float hB = ib * mul;
 
-    long r = floor((K * ir - w) / Q);
-    long g = floor((K * ig - w) / Q);
-    long b = floor((K * ib - w) / Q);
+    float max = getMax(hR, hG, hB);
+    float min = getMin(hR, hG, hB);
+    float lum =  ((max + min) / 2.0f - 127.5f) * (255.0f/127.5f) / mul;
 
-    return RgbwColor(r, g, b, w);*/
-
-    long m = min(ir, ig, ib);
-    return RgbwColor(ir, ig, ib, m);
+    long w = (long)lum;
+    long r = floor(ir - lum);
+    long g = floor(ig - lum);
+    long b = floor(ib - lum);
+    
+    w = boundValue(w, 0L, 255L);
+    r = boundValue(r, 0L, 255L);
+    g = boundValue(g, 0L, 255L);
+    b = boundValue(b, 0L, 255L);
+    
+    return RgbwColor(r, g, b, w);
 }
 
 String buildJsonResponse(long red, long blue, long green, long alpha)
@@ -102,37 +121,23 @@ String buildJsonResponse(long red, long blue, long green, long alpha)
     return "{\"red\":\"" + String(red) + "\",\"blue\":\"" + String(blue) + "\",\"green\":\"" + String(green) + "\",\"alpha\":\"" + String(alpha) + "\"}";
 }
 
-template <class T>
-inline unsigned int toIntFromHexString(const T& t) {
-
-    unsigned int x;
-    std::stringstream ss;
-    ss << std::hex << t;
-    ss >> x;
-    return x;
-
-}
-
 void handleSerialRequest()
 {
     while(Serial.available()) {
+        //Serial.r
         auto str = Serial.readString();
+        
         if (str.length() == 6) {
-// int number = (int) strtol(str, NULL, 16);
-//             int r, g, b = 0;
-//             std::istringstream(str.substring(0,2)) >> std::hex >> r;
-//             std::istringstream(str.substring(2,2)) >> std::hex >> g;
-//             std::istringstream(str.substring(4,2)) >> std::hex >> b;
+            long r = strtol(&str.substring(0, 2)[0], NULL, 16);
+            long g = strtol(&str.substring(2, 4)[0], NULL, 16);
+            long b = strtol(&str.substring(4, 6)[0], NULL, 16);
 
-//             // int num = stoi(str, 0, 16);
+            RgbwColor color = rgbwFromRgb(r, g, b);
 
-//             // int r = num / 0x10000;
-//             // int g = (num / 0x100) % 0x100;
-//             // int b = num % 0x100;
+            strip.ClearTo(color);
+            strip.Show();
 
-            Serial.println(r);
-            Serial.println(g);
-            Serial.println(b);
+            Serial.println();
         }
     }
 }
@@ -149,21 +154,6 @@ void handleColorChangeRequest()
     strip.Show();
 
     server.send(200, "application/json", buildJsonResponse(color.R, color.B, color.G, color.W));
-}
-
-void listDir(char * dir){
- 
-  File root = SPIFFS.open(dir);
- 
-  File file = root.openNextFile();
- 
-  while(file){
- 
-      Serial.print("FILE: ");
-      Serial.println(file.name());
- 
-      file = root.openNextFile();
-  }
 }
 
 #define LED_BUILTIN 2
@@ -218,8 +208,6 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-    //listDir("/");
-    //listDir("/static");
   dnsServer.processNextRequest();
   server.handleClient();
   handleSerialRequest();
