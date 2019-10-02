@@ -1,10 +1,18 @@
+#ifndef ARDUINO
+#define ARDUINO 10808
+#endif
+
 #ifndef ARDUINO_ARCH_ESP32
 #define ARDUINO_ARCH_ESP32
 #endif
 
+
+
 #include <NeoPixelAnimator.h>
 #include <NeoPixelBrightnessBus.h>
 #include <NeoPixelBus.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 /*
   Blink
@@ -50,6 +58,7 @@ const byte DNS_PORT = 53;
 
 const uint16_t PixelCount = 6;
 const uint16_t LedOutGPIO = 22; // D22
+const uint16_t TemperatureGPIO = 2;
 
 const char WiFiAPPID[] = "nango_car_led";
 const char WiFiAPPSK[] = "hondaaccord";
@@ -65,6 +74,15 @@ WebServer server(80);
 String responseHTML = ""
 "<!DOCTYPE html><html><head><title>CaptivePortal</title></head><body>"
 "<p>No index.html found.</p></body></html>";
+
+OneWire oneWire(TemperatureGPIO);
+DallasTemperature sensors(&oneWire);
+
+// Number of temperature devices found
+int numberOfTempSensor;
+
+// We'll use this variable to store a found device address
+DeviceAddress tempDeviceAddress;
 
 template <class T>
 T getMin(T a, T b, T c)
@@ -197,18 +215,36 @@ void setup() {
         server.send(200, "text/html", responseHTML);
     });
 
-    // server.onNotFound([]() {
-        
-    // });
-
     server.begin();
+    sensors.begin();
+    numberOfTempSensor = sensors.getDeviceCount();
+    Serial.print("Found ");
+    Serial.print(numberOfTempSensor, DEC);
+    Serial.println("Devices");
 
     Serial.println();
 }
 
 // the loop function runs over and over again forever
 void loop() {
+  sensors.requestTemperatures();
+  Serial.print("Temperature for the device 1 (index 0) is: ");
+  Serial.println(sensors.getTempCByIndex(0)); 
+  
+  for(auto i = 0; i < numberOfTempSensor; i ++) {
+      if (sensors.getAddress(tempDeviceAddress, i)) {
+        Serial.print("Temperature for device: ");
+        Serial.println(i,DEC);
+        // Print the data
+        float tempC = sensors.getTempC(tempDeviceAddress);
+        Serial.print("Temp C: ");
+        Serial.print(tempC);
+        Serial.print(" Temp F: ");
+        Serial.println(DallasTemperature::toFahrenheit(tempC));
+      }
+  }
   dnsServer.processNextRequest();
   server.handleClient();
   handleSerialRequest();
+  
 }
