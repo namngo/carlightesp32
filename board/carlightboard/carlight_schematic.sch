@@ -18057,7 +18057,7 @@ type 0309, grid 2.5 mm</description>
 <part name="GND10" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="R2" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0805" package3d_urn="urn:adsk.eagle:package:26059/1" value="10k"/>
 <part name="R3" library="SparkFun-Sensors" library_urn="urn:adsk.eagle:library:534" deviceset="PHOTOCELL" device="PTH-KIT"/>
-<part name="Q1" library="Transistor" library_urn="urn:adsk.eagle:library:11396518" deviceset="2N7002,215" device="" package3d_urn="urn:adsk.eagle:package:10893258/2"/>
+<part name="Q1" library="Transistor" library_urn="urn:adsk.eagle:library:11396518" deviceset="2N7002,215" device="" package3d_urn="urn:adsk.eagle:package:10893258/2" value="2N7002"/>
 <part name="R4" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0805" package3d_urn="urn:adsk.eagle:package:6240566/1" value="10k"/>
 <part name="R5" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0805" package3d_urn="urn:adsk.eagle:package:6240566/1" value="10k"/>
 <part name="+3V" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCCIO" device=""/>
@@ -18068,8 +18068,8 @@ type 0309, grid 2.5 mm</description>
 <part name="+3V4" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCCIO" device=""/>
 <part name="C2" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="C-US" device="C0805" package3d_urn="urn:adsk.eagle:package:26137/1" value="100nF"/>
 <part name="R6" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0805" package3d_urn="urn:adsk.eagle:package:6240566/1" value="10k"/>
-<part name="C5" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="CPOL-US" device="150CLZ-1010" package3d_urn="urn:adsk.eagle:package:25887/1" value="470uf"/>
 <part name="C4" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="CPOL-US" device="153CLV-0605" package3d_urn="urn:adsk.eagle:package:25889/1" value="100uf"/>
+<part name="C1" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="CPOL-US" device="153CLV-0605" package3d_urn="urn:adsk.eagle:package:25889/1" value="100uf"/>
 </parts>
 <sheets>
 <sheet>
@@ -18171,13 +18171,13 @@ type 0309, grid 2.5 mm</description>
 <attribute name="NAME" x="138.6586" y="49.53" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="133.858" y="49.53" size="1.778" layer="96" rot="R270"/>
 </instance>
-<instance part="C5" gate="G$1" x="53.34" y="99.06" smashed="yes">
-<attribute name="NAME" x="54.356" y="99.695" size="1.778" layer="95"/>
-<attribute name="VALUE" x="54.356" y="94.869" size="1.778" layer="96"/>
-</instance>
 <instance part="C4" gate="G$1" x="35.56" y="73.66" smashed="yes">
 <attribute name="NAME" x="36.576" y="74.295" size="1.778" layer="95"/>
 <attribute name="VALUE" x="36.576" y="69.469" size="1.778" layer="96"/>
+</instance>
+<instance part="C1" gate="G$1" x="53.34" y="99.06" smashed="yes">
+<attribute name="NAME" x="54.356" y="99.695" size="1.778" layer="95"/>
+<attribute name="VALUE" x="54.356" y="94.869" size="1.778" layer="96"/>
 </instance>
 </instances>
 <busses>
@@ -18192,7 +18192,7 @@ type 0309, grid 2.5 mm</description>
 <wire x1="27.94" y1="99.06" x2="38.1" y2="99.06" width="0.1524" layer="91"/>
 <wire x1="53.34" y1="101.6" x2="38.1" y2="101.6" width="0.1524" layer="91"/>
 <junction x="38.1" y="101.6"/>
-<pinref part="C5" gate="G$1" pin="+"/>
+<pinref part="C1" gate="G$1" pin="+"/>
 </segment>
 <segment>
 <pinref part="U$1" gate="G$1" pin="VIN"/>
@@ -18218,7 +18218,7 @@ type 0309, grid 2.5 mm</description>
 <wire x1="38.1" y1="96.52" x2="38.1" y2="93.98" width="0.1524" layer="91"/>
 <wire x1="53.34" y1="93.98" x2="38.1" y2="93.98" width="0.1524" layer="91"/>
 <junction x="38.1" y="93.98"/>
-<pinref part="C5" gate="G$1" pin="-"/>
+<pinref part="C1" gate="G$1" pin="-"/>
 </segment>
 <segment>
 <pinref part="LEDOUT" gate="A" pin="3"/>
