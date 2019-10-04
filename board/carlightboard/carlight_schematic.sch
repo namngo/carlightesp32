@@ -18268,13 +18268,13 @@ type 0309, grid 2.5 mm</description>
 </net>
 <net name="N$6" class="0">
 <segment>
-<wire x1="162.56" y1="48.26" x2="162.56" y2="66.04" width="0.1524" layer="91"/>
+<wire x1="162.56" y1="48.26" x2="162.56" y2="63.5" width="0.1524" layer="91"/>
 <pinref part="R3" gate="G$1" pin="P$2"/>
-<pinref part="U$1" gate="G$1" pin="IO21"/>
-<wire x1="88.9" y1="66.04" x2="162.56" y2="66.04" width="0.1524" layer="91"/>
 <pinref part="R2" gate="G$1" pin="2"/>
-<wire x1="162.56" y1="66.04" x2="162.56" y2="68.58" width="0.1524" layer="91"/>
-<junction x="162.56" y="66.04"/>
+<pinref part="U$1" gate="G$1" pin="IO19"/>
+<wire x1="162.56" y1="63.5" x2="162.56" y2="68.58" width="0.1524" layer="91"/>
+<wire x1="88.9" y1="63.5" x2="162.56" y2="63.5" width="0.1524" layer="91"/>
+<junction x="162.56" y="63.5"/>
 </segment>
 </net>
 <net name="N$2" class="0">
@@ -18367,14 +18367,15 @@ type 0309, grid 2.5 mm</description>
 </net>
 <net name="N$1" class="0">
 <segment>
-<pinref part="U$1" gate="G$1" pin="IO17"/>
-<wire x1="88.9" y1="55.88" x2="137.16" y2="55.88" width="0.1524" layer="91"/>
 <pinref part="TEMP" gate="A" pin="2"/>
 <wire x1="137.16" y1="55.88" x2="144.78" y2="55.88" width="0.1524" layer="91"/>
 <wire x1="144.78" y1="55.88" x2="144.78" y2="38.1" width="0.1524" layer="91"/>
 <pinref part="R6" gate="G$1" pin="1"/>
 <wire x1="137.16" y1="50.8" x2="137.16" y2="55.88" width="0.1524" layer="91"/>
+<wire x1="137.16" y1="55.88" x2="137.16" y2="66.04" width="0.1524" layer="91"/>
 <junction x="137.16" y="55.88"/>
+<pinref part="U$1" gate="G$1" pin="IO21"/>
+<wire x1="137.16" y1="66.04" x2="88.9" y2="66.04" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$4" class="0">
