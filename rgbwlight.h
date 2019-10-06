@@ -19,8 +19,11 @@ class RbgwLight {
       seat_count_(seat_count), 
       strip_(Strip(seat_count * LED_PER_SEAT, gpio)) {
   }
+
+  ~RbgwLight() {
+  }
   
-  void Init() {
+  void Begin() {
     strip_.Begin();
 
     preferences.begin(APP_NAME, false);
@@ -39,16 +42,16 @@ class RbgwLight {
     }
     preferences.end();
     strip_.Show();
-    
   }
 
-  void Update(uint16_t seat, long r, long g, long b) {
+  RgbwColor Update(uint16_t seat, long r, long g, long b) {
     auto color = rgbwFromRgb(r, g, b);
     SaveColor(seat * 2, color);
     strip_.SetPixelColor(seat * 2, color);
     SaveColor(seat * 2 + 1, color);
     strip_.SetPixelColor(seat * 2 + 1, color);
     strip_.Show();
+    return color;
   }
     
  private:
@@ -86,6 +89,7 @@ class RbgwLight {
       return value;
   }
 
+  // https://stackoverflow.com/questions/21117842/converting-an-rgbw-color-to-a-standard-rgb-hsb-rappresentation
   RgbwColor rgbwFromRgb(const long ir, const long ig, const long ib) const {
     long tempMax = getMax(ir, ig, ib);
 
@@ -118,6 +122,5 @@ class RbgwLight {
   Preferences preferences;
   const uint16_t seat_count_;
 };
-
 
 #endif

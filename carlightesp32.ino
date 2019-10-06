@@ -1,45 +1,10 @@
-#ifndef ARDUINO
-#define ARDUINO 10808
-#endif
-
-#ifndef ARDUINO_ARCH_ESP32
-#define ARDUINO_ARCH_ESP32
-#endif
-
-
+#include "Arduino.h"
 
 #include <NeoPixelAnimator.h>
 #include <NeoPixelBrightnessBus.h>
 #include <NeoPixelBus.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-
-/*
-  Blink
-
-  Turns an LED on for one second, then off for one second, repeatedly.
-
-  Most Arduinos have an on-board LED you can control. On the UNO, MEGA and ZERO
-  it is attached to digital pin 13, on MKR1000 on pin 6. LED_BUILTIN is set to
-  the correct LED pin independent of which board is used.
-  If you want to know what pin the on-board LED is connected to on your Arduino
-  model, check the Technical Specs of your board at:
-  https://www.arduino.cc/en/Main/Products
-
-  modified 8 May 2014
-  by Scott Fitzgerald
-  modified 2 Sep 2016
-  by Arturo Guadalupi
-  modified 8 Sep 2016
-  by Colby Newman
-
-  This example code is in the public domain.
-
-  http://www.arduino.cc/en/Tutorial/Blink
-*/
-
-#include <sstream>
-#include "Arduino.h"
 
 #include <WiFi.h>
 #include <WiFiUdp.h>
@@ -52,6 +17,7 @@
 #include <string>
 #include <SPIFFS.h>
 #include "rgbwlight.h"
+#include "espnetwork.h"
 
 const byte DNS_PORT = 53;
 
@@ -61,16 +27,13 @@ const uint16_t TemperatureGPIO = 2;
 
 const char WiFiAPPID[] = "nango_car_led";
 const char WiFiAPPSK[] = "hondaaccord";
+const IPAddress ip(192, 168, 4, 1);
+
 const char indexHtmlPath[] = "/index.html";
 
-NeoPixelBus<NeoGrbwFeature, Neo800KbpsMethod> strip(PixelCount, LedOutGPIO);
-RgbwColor default_colors[4] = {RgbwColor(255, 0, 0, 0), RgbwColor(0, 255, 0, 0), RgbwColor(0, 0, 255, 0), RgbwColor(0, 0, 0, 255)};
-RgbwColor default_color(128, 128, 128, 128);
+RbgwLight light(LedOutGPIO, 2);
 
-RbgwLight light(4, 2);
-
-
-IPAddress apIP(192, 168, 4, 1);
+const IPAddress AP_IP(192, 168, 4, 1);
 DNSServer dnsServer;
 WebServer server(80);
 
@@ -87,177 +50,106 @@ int numberOfTempSensor;
 // We'll use this variable to store a found device address
 DeviceAddress tempDeviceAddress;
 
-template <class T>
-T getMin(T a, T b, T c)
+String buildJsonResponse(const RgbwColor& c)
 {
-    return std::min(a, std::min(b, c));
-}
-
-template <class T>
-T getMax(T a, T b, T c)
-{
-    return std::max(a, std::max(b, c));
-}
-
-template <class T>
-T boundValue(T value, T min, T max) {
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
-}
-
-// https://stackoverflow.com/questions/21117842/converting-an-rgbw-color-to-a-standard-rgb-hsb-rappresentation
-RgbwColor rgbwFromRgb(long ir, long ig, long ib)
-{
-    long tempMax = getMax(ir, ig, ib);
-
-    if (tempMax == 0) {
-        return RgbwColor(0);
-    }
-
-    float mul = 255.0f / (float)tempMax;
-    float hR = ir * mul;
-    float hG = ig * mul;
-    float hB = ib * mul;
-
-    float max = getMax(hR, hG, hB);
-    float min = getMin(hR, hG, hB);
-    float lum =  ((max + min) / 2.0f - 127.5f) * (255.0f/127.5f) / mul;
-
-    long w = (long)lum;
-    long r = floor(ir - lum);
-    long g = floor(ig - lum);
-    long b = floor(ib - lum);
-    
-    w = boundValue(w, 0L, 255L);
-    r = boundValue(r, 0L, 255L);
-    g = boundValue(g, 0L, 255L);
-    b = boundValue(b, 0L, 255L);
-    
-    return RgbwColor(r, g, b, w);
-}
-
-String buildJsonResponse(long red, long blue, long green, long alpha)
-{
-    return "{\"red\":\"" + String(red) + "\",\"blue\":\"" + String(blue) + "\",\"green\":\"" + String(green) + "\",\"alpha\":\"" + String(alpha) + "\"}";
+  return "{\"red\":\"" + String(c.R) + "\",\"blue\":\"" + String(c.B) + "\",\"green\":\"" + String(c.G) + "\",\"white\":\"" + String(c.W) + "\"}";
 }
 
 void handleSerialRequest()
 {
-    while(Serial.available()) {
-        //Serial.r
-        auto str = Serial.readString();
-        
-        if (str.length() == 6) {
-            long r = strtol(&str.substring(0, 2)[0], NULL, 16);
-            long g = strtol(&str.substring(2, 4)[0], NULL, 16);
-            long b = strtol(&str.substring(4, 6)[0], NULL, 16);
+  while(Serial.available()) {
+    auto str = Serial.readString();
+    
+    if (str.length() == 8) {
+      long r = strtol(&str.substring(0, 2)[0], NULL, 16);
+      long g = strtol(&str.substring(2, 4)[0], NULL, 16);
+      long b = strtol(&str.substring(4, 6)[0], NULL, 16);
+      long seat = strtol(&str.substring(6, 8)[0], NULL, 16);
 
-            RgbwColor color = rgbwFromRgb(r, g, b);
-
-            strip.ClearTo(color);
-            strip.Show();
-
-            Serial.println();
-        }
+      auto color = light.Update(seat, r, b, g);
+      Serial.println(buildJsonResponse(color));
     }
+  }
 }
 
 void handleColorChangeRequest()
 {
-    long red = server.arg("red").toInt();
-    long blue = server.arg("blue").toInt();
-    long green = server.arg("green").toInt();
-    
-    RgbwColor color = rgbwFromRgb(red, green, blue);
+  long r = server.arg("red").toInt();
+  long b = server.arg("blue").toInt();
+  long g = server.arg("green").toInt();
+  long seat = server.arg("seat").toInt();
+  
+  auto color = light.Update(seat, r, b, g);
 
-    strip.ClearTo(color);
-    strip.Show();
-
-    server.send(200, "application/json", buildJsonResponse(color.R, color.B, color.G, color.W));
+  server.send(200, "application/json", buildJsonResponse(color));
 }
 
-#define LED_BUILTIN 2
 // the setup function runs once when you press reset or power the board
 void setup() {
-  
-    SPIFFS.begin();
-    Serial.begin(115200);
-  
-    strip.Begin();
-    strip.ClearTo(default_colors[2]);
-    strip.Show();
+  light.Begin();
+  SPIFFS.begin();
+  Serial.begin(115200);
 
-    WiFi.mode(WIFI_AP);
-    WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-    WiFi.softAP(WiFiAPPID, WiFiAPPSK);
+  // WiFi.mode(WIFI_AP);
+  // WiFi.softAPConfig(apIP, apGateWay, IPAddress(255, 255, 255, 0));
+  // WiFi.softAP(WiFiAPPID, WiFiAPPSK);
 
-    dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-    dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
+  // dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+  // if (!dnsServer.start(DNS_PORT, "*", WiFi.softAPIP())) {
+  //   Serial.println("Cannot start dns server");
+  // };
 
-  // setup the index.html
-    if (SPIFFS.begin() && SPIFFS.exists(indexHtmlPath))
+// setup the index.html
+  if (SPIFFS.begin() && SPIFFS.exists(indexHtmlPath))
+  {
+    File f = SPIFFS.open(indexHtmlPath, "r");
+    if (f)
     {
-        File f = SPIFFS.open(indexHtmlPath, "r");
-        if (f)
-        {
-            responseHTML = f.readString();
-        }
+      responseHTML = f.readString();
     }
+  }
 
-    //server.serveStatic("/static", SPIFFS, "/static", "max-age=86400");
-    server.serveStatic("/static/jquery-3.2.1.min.js", SPIFFS, "/static/jquery-3.2.1.min.js", "max-age=86400");
-    server.serveStatic("/static/colorpicker.min.js", SPIFFS, "/static/colorpicker.min.js", "max-age=86400");
-    server.serveStatic("/static/colorpicker.min.css", SPIFFS, "/static/colorpicker.min.css", "max-age=86400");
-    server.serveStatic("/static/bootstrap.min.js", SPIFFS, "/static/bootstrap.min.js", "max-age=86400");
-    server.serveStatic("/static/bootstrap.min.css", SPIFFS, "/static/bootstrap.min.css", "max-age=86400");
+  //server.serveStatic("/static", SPIFFS, "/static", "max-age=86400");
+  server.serveStatic("/static/jquery-3.2.1.min.js", SPIFFS, "/static/jquery-3.2.1.min.js", "max-age=86400");
+  server.serveStatic("/static/colorpicker.min.js", SPIFFS, "/static/colorpicker.min.js", "max-age=86400");
+  server.serveStatic("/static/colorpicker.min.css", SPIFFS, "/static/colorpicker.min.css", "max-age=86400");
+  server.serveStatic("/static/bootstrap.min.js", SPIFFS, "/static/bootstrap.min.js", "max-age=86400");
+  server.serveStatic("/static/bootstrap.min.css", SPIFFS, "/static/bootstrap.min.css", "max-age=86400");
 
-    server.on("/led", handleColorChangeRequest);
+  server.on("/led", handleColorChangeRequest);
 
-    server.on("/index.html", [] () {
-        server.send(200, "text/html", responseHTML);
-    });
+  server.on("/index.html", [] () {
+      server.send(200, "text/html", responseHTML);
+  });
 
-    server.begin();
-    sensors.begin();
-    numberOfTempSensor = sensors.getDeviceCount();
-    Serial.print("Found ");
-    Serial.print(numberOfTempSensor, DEC);
-    Serial.println("Devices");
+  server.begin();
+  sensors.begin();
+  numberOfTempSensor = sensors.getDeviceCount();
+  Serial.print("Found ");
+  Serial.print(numberOfTempSensor, DEC);
+  Serial.println("Devices");
 
-    Serial.println();
+  Serial.println();
 }
-
-volatile int current = 0;
 
 // the loop function runs over and over again forever
 void loop() {
-  auto c = default_colors[current];
-  current ++;
-  if (current == 4) {
-    current = 0;
-  }
-  strip.ClearTo(c);
-  strip.Show();
-  delay(500);
+
   sensors.requestTemperatures();
-  Serial.print("Temperature for the device 1 (index 0) is: ");
-  Serial.println(sensors.getTempCByIndex(0)); 
   
   for(auto i = 0; i < numberOfTempSensor; i ++) {
-      if (sensors.getAddress(tempDeviceAddress, i)) {
-        Serial.print("Temperature for device: ");
-        Serial.println(i,DEC);
-        // Print the data
-        float tempC = sensors.getTempC(tempDeviceAddress);
-        Serial.print("Temp C: ");
-        Serial.print(tempC);
-        Serial.print(" Temp F: ");
-        Serial.println(DallasTemperature::toFahrenheit(tempC));
-      }
+    if (sensors.getAddress(tempDeviceAddress, i)) {
+      Serial.print("Temperature for device: ");
+      Serial.println(i,DEC);
+      // Print the data
+      float tempC = sensors.getTempC(tempDeviceAddress);
+      Serial.print("Temp C: ");
+      Serial.print(tempC);
+      Serial.print(" Temp F: ");
+      Serial.println(DallasTemperature::toFahrenheit(tempC));
+    }
   }
   dnsServer.processNextRequest();
   server.handleClient();
   handleSerialRequest();
-  
 }
