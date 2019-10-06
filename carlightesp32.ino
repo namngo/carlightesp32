@@ -51,12 +51,11 @@
 #include "FS.h"
 #include <string>
 #include <SPIFFS.h>
-
-using namespace std;
+#include "rgbwlight.h"
 
 const byte DNS_PORT = 53;
 
-const uint16_t PixelCount = 6;
+const uint16_t PixelCount = 4;
 const uint16_t LedOutGPIO = 22; // D22
 const uint16_t TemperatureGPIO = 2;
 
@@ -65,7 +64,11 @@ const char WiFiAPPSK[] = "hondaaccord";
 const char indexHtmlPath[] = "/index.html";
 
 NeoPixelBus<NeoGrbwFeature, Neo800KbpsMethod> strip(PixelCount, LedOutGPIO);
-RgbwColor black(0);
+RgbwColor default_colors[4] = {RgbwColor(255, 0, 0, 0), RgbwColor(0, 255, 0, 0), RgbwColor(0, 0, 255, 0), RgbwColor(0, 0, 0, 255)};
+RgbwColor default_color(128, 128, 128, 128);
+
+RbgwLight light(4, 2);
+
 
 IPAddress apIP(192, 168, 4, 1);
 DNSServer dnsServer;
@@ -182,7 +185,7 @@ void setup() {
     Serial.begin(115200);
   
     strip.Begin();
-    strip.ClearTo(black);
+    strip.ClearTo(default_colors[2]);
     strip.Show();
 
     WiFi.mode(WIFI_AP);
@@ -225,8 +228,18 @@ void setup() {
     Serial.println();
 }
 
+volatile int current = 0;
+
 // the loop function runs over and over again forever
 void loop() {
+  auto c = default_colors[current];
+  current ++;
+  if (current == 4) {
+    current = 0;
+  }
+  strip.ClearTo(c);
+  strip.Show();
+  delay(500);
   sensors.requestTemperatures();
   Serial.print("Temperature for the device 1 (index 0) is: ");
   Serial.println(sensors.getTempCByIndex(0)); 
