@@ -87,14 +87,15 @@ void setup() {
   network.Begin();
   light.Begin();
 
-  // network.onLedChange([] (uint8_t r, uint8_t b, uint8_t g, uint8_t seat) { 
-  //   Serial.println("led_request");
-  //   //auto c = light.Update(seat, r, g, b);
-  //   //return std::unique_ptr<RgbwColor>(new RgbwColor(0));
-  // });
-  network.onLedChange([] () {
-    Serial.println("nothing");
+  network.onLedChange([&] (uint8_t r, uint8_t g, uint8_t b, uint8_t seat) { 
+    Serial.println("led_request");
+    auto c = light.Update(seat, r, g, b);
+    //return std::unique_ptr<RgbwColor>(new RgbwColor(0));
+    return c;
   });
+  // network.onLedChange([] () {
+  //   Serial.println("nothing");
+  // });
   
   sensors.begin();
   numberOfTempSensor = sensors.getDeviceCount();
