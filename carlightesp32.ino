@@ -19,23 +19,20 @@
 #include "rgbwlight.h"
 #include "espnetwork.h"
 
-const byte DNS_PORT = 53;
-
 const uint16_t PixelCount = 4;
 const uint16_t LedOutGPIO = 22; // D22
 const uint16_t TemperatureGPIO = 2;
 
-const char WiFiAPPID[] = "nango_car_led";
-const char WiFiAPPSK[] = "hondaaccord";
+const char ap_name[] = "nango_car_led";
+const char ap_password[] = "hondaaccord";
 const IPAddress ip(192, 168, 4, 1);
 
 const char indexHtmlPath[] = "/index.html";
 
 RbgwLight light(LedOutGPIO, 2);
+EspNetwork network(ap_name, ap_password, ip);
 
-const IPAddress AP_IP(192, 168, 4, 1);
-DNSServer dnsServer;
-WebServer server(80);
+//WebServer server(80);
 
 String responseHTML = ""
 "<!DOCTYPE html><html><head><title>CaptivePortal</title></head><body>"
@@ -74,55 +71,34 @@ void handleSerialRequest()
 
 void handleColorChangeRequest()
 {
-  long r = server.arg("red").toInt();
-  long b = server.arg("blue").toInt();
-  long g = server.arg("green").toInt();
-  long seat = server.arg("seat").toInt();
+  // long r = server.arg("red").toInt();
+  // long b = server.arg("blue").toInt();
+  // long g = server.arg("green").toInt();
+  // long seat = server.arg("seat").toInt();
   
-  auto color = light.Update(seat, r, b, g);
+  // auto color = light.Update(seat, r, b, g);
 
-  server.send(200, "application/json", buildJsonResponse(color));
+  // server.send(200, "application/json", buildJsonResponse(color));
 }
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-  light.Begin();
-  SPIFFS.begin();
   Serial.begin(115200);
-
-  // WiFi.mode(WIFI_AP);
-  // WiFi.softAPConfig(apIP, apGateWay, IPAddress(255, 255, 255, 0));
-  // WiFi.softAP(WiFiAPPID, WiFiAPPSK);
-
-  // dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-  // if (!dnsServer.start(DNS_PORT, "*", WiFi.softAPIP())) {
-  //   Serial.println("Cannot start dns server");
-  // };
+  network.Begin();
+  light.Begin();
+  
+  SPIFFS.begin();
 
 // setup the index.html
-  if (SPIFFS.begin() && SPIFFS.exists(indexHtmlPath))
-  {
+  if (SPIFFS.begin() && SPIFFS.exists(indexHtmlPath)) {
     File f = SPIFFS.open(indexHtmlPath, "r");
-    if (f)
-    {
+    if (f) {
       responseHTML = f.readString();
     }
   }
 
   //server.serveStatic("/static", SPIFFS, "/static", "max-age=86400");
-  server.serveStatic("/static/jquery-3.2.1.min.js", SPIFFS, "/static/jquery-3.2.1.min.js", "max-age=86400");
-  server.serveStatic("/static/colorpicker.min.js", SPIFFS, "/static/colorpicker.min.js", "max-age=86400");
-  server.serveStatic("/static/colorpicker.min.css", SPIFFS, "/static/colorpicker.min.css", "max-age=86400");
-  server.serveStatic("/static/bootstrap.min.js", SPIFFS, "/static/bootstrap.min.js", "max-age=86400");
-  server.serveStatic("/static/bootstrap.min.css", SPIFFS, "/static/bootstrap.min.css", "max-age=86400");
-
-  server.on("/led", handleColorChangeRequest);
-
-  server.on("/index.html", [] () {
-      server.send(200, "text/html", responseHTML);
-  });
-
-  server.begin();
+  
   sensors.begin();
   numberOfTempSensor = sensors.getDeviceCount();
   Serial.print("Found ");
@@ -149,7 +125,6 @@ void loop() {
       Serial.println(DallasTemperature::toFahrenheit(tempC));
     }
   }
-  dnsServer.processNextRequest();
-  server.handleClient();
+  network.Loop();
   handleSerialRequest();
 }
