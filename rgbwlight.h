@@ -44,12 +44,12 @@ class RbgwLight {
     strip_.Show();
   }
 
-  RgbwColor Update(uint16_t seat, long r, long g, long b) {
+  std::unique_ptr<RgbwColor> Update(uint16_t seat, uint16_t r, uint16_t g, uint16_t b) {
     auto color = rgbwFromRgb(r, g, b);
-    SaveColor(seat * 2, color);
-    strip_.SetPixelColor(seat * 2, color);
-    SaveColor(seat * 2 + 1, color);
-    strip_.SetPixelColor(seat * 2 + 1, color);
+    SaveColor(seat * 2, *color);
+    strip_.SetPixelColor(seat * 2, *color);
+    SaveColor(seat * 2 + 1, *color);
+    strip_.SetPixelColor(seat * 2 + 1, *color);
     strip_.Show();
     return color;
   }
@@ -90,11 +90,12 @@ class RbgwLight {
   }
 
   // https://stackoverflow.com/questions/21117842/converting-an-rgbw-color-to-a-standard-rgb-hsb-rappresentation
-  RgbwColor rgbwFromRgb(const long ir, const long ig, const long ib) const {
+  std::unique_ptr<RgbwColor> rgbwFromRgb(const long ir, const long ig,
+                                                   const long ib) const {
     long tempMax = getMax(ir, ig, ib);
 
     if (tempMax == 0) {
-        return RgbwColor(0);
+        return std::unique_ptr<RgbwColor>(new RgbwColor(0));
     }
 
     float mul = 255.0f / (float)tempMax;
@@ -116,8 +117,9 @@ class RbgwLight {
     g = boundValue(g, 0L, 255L);
     b = boundValue(b, 0L, 255L);
     
-    return RgbwColor(r, g, b, w);
+    return std::unique_ptr<RgbwColor>(new RgbwColor(r, g, b, w));
   }
+
   Strip strip_;
   Preferences preferences;
   const uint16_t seat_count_;

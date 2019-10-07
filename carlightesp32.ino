@@ -63,8 +63,8 @@ void handleSerialRequest()
       long b = strtol(&str.substring(4, 6)[0], NULL, 16);
       long seat = strtol(&str.substring(6, 8)[0], NULL, 16);
 
-      auto color = light.Update(seat, r, b, g);
-      Serial.println(buildJsonResponse(color));
+      auto c = light.Update(seat, r, b, g);
+      Serial.println(buildJsonResponse(*c));
     }
   }
 }
@@ -86,18 +86,15 @@ void setup() {
   Serial.begin(115200);
   network.Begin();
   light.Begin();
-  
-  SPIFFS.begin();
 
-// setup the index.html
-  if (SPIFFS.begin() && SPIFFS.exists(indexHtmlPath)) {
-    File f = SPIFFS.open(indexHtmlPath, "r");
-    if (f) {
-      responseHTML = f.readString();
-    }
-  }
-
-  //server.serveStatic("/static", SPIFFS, "/static", "max-age=86400");
+  // network.onLedChange([] (uint8_t r, uint8_t b, uint8_t g, uint8_t seat) { 
+  //   Serial.println("led_request");
+  //   //auto c = light.Update(seat, r, g, b);
+  //   //return std::unique_ptr<RgbwColor>(new RgbwColor(0));
+  // });
+  network.onLedChange([] () {
+    Serial.println("nothing");
+  });
   
   sensors.begin();
   numberOfTempSensor = sensors.getDeviceCount();

@@ -43,7 +43,9 @@
         <script type="text/javascript">
             function submitColor() {
                 var color = $("#colorpicker").data().colorpicker.color.toRGB();
-                var url = "/led?red=" + color.r + "&blue=" + color.b + "&green=" + color.g + "&alpha=" + color.a;
+                var url = "/led?red=" + color.r + "&blue=" + color.b + 
+                          "&green=" + color.g + "&alpha=" + color.a + 
+                          "&seat=0";
                 $.get(url);
             }
 

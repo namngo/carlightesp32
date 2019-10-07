@@ -7,6 +7,8 @@
 #include <SPIFFS.h>
 #include <WebServer.h>
 #include <WiFiServer.h>
+#include <NeoPixelBus.h>
+#include <functional>
 
 namespace {
 
@@ -17,6 +19,8 @@ const byte SERVER_PORT = 80;
 
 class EspNetwork {
  public:
+  typedef std::function<void()> TLedChangeHandler;
+
   EspNetwork(const char* ap_name, const char* ap_password,
       const IPAddress& ip) : ap_name_(ap_name), ap_password_(ap_password), 
       ip_(ip), subnet_(255, 255, 255, 0),
@@ -36,27 +40,7 @@ class EspNetwork {
     dnsServer_ = DNSServer();
     dnsServer_.start(DNS_PORT, "*", ap_ip);
 
-    SPIFFS.begin();
-
-    //server_ = WebServer(SERVER_PORT);
-    server_.serveStatic("/", SPIFFS, "/");
-    // server_.serveStatic("/static/jquery-3.2.1.min.js", SPIFFS, 
-    //                   "/static/jquery-3.2.1.min.js", "max-age=86400");
-    // server_.serveStatic("/static/colorpicker.min.js", SPIFFS,
-    //                   "/static/colorpicker.min.js", "max-age=86400");
-    // server_.serveStatic("/static/colorpicker.min.css", SPIFFS, 
-    //                   "/static/colorpicker.min.css", "max-age=86400");
-    // server_.serveStatic("/static/bootstrap.min.js", SPIFFS,
-    //                   "/static/bootstrap.min.js", "max-age=86400");
-    // server_.serveStatic("/static/bootstrap.min.css", SPIFFS, 
-    //                   "/static/bootstrap.min.css", "max-age=86400");
-
-    // server_.on("/led", handleColorChangeRequest);
-
-    // server_.on("/index.html", [] () {
-    //   server_.send(200, "text/html", responseHTML);
-    // });
-    server_.begin();
+    SetupServer();
     return ap_ip;
   }
 
@@ -64,8 +48,35 @@ class EspNetwork {
     dnsServer_.processNextRequest();
     server_.handleClient();
   }
+
+  void onLedChange(TLedChangeHandler handler) {
+    server_.on("/led", [&] () {
+      uint8_t r = server_.arg("red").toInt();
+      uint8_t b = server_.arg("blue").toInt();
+      uint8_t g = server_.arg("green").toInt();
+      uint8_t seat = server_.arg("seat").toInt();
+      Serial.println("r" + String(r) + ":b" + String(b) + ":g" + String(g));
+      
+//      handler(r, g, b, seat);
+      handler();
+        Serial.println("done");
+      // String respond = "{\"red\":\"" + String(c->R) + "\",\"blue\":\""
+      //         + String(c->B) + "\",\"green\":\""
+      //         + String(c->G) + "\",\"white\":\""
+      //         + String(c->W) + "\", \"seat\":\""
+      //         + String(seat) + "\"}";
+      // Serial.println(respond);
+      //return respond;
+    });
+    server_.begin();
+  }
   
  private:
+  void SetupServer() {
+    SPIFFS.begin();
+    server_.serveStatic("/static/", SPIFFS, "/static/");
+    server_.serveStatic("/index.htm", SPIFFS, "/index.htm");
+  }
   WebServer server_;
   DNSServer dnsServer_;
   const char* ap_name_;
