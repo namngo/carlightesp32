@@ -56,7 +56,7 @@ void handleSerialRequest()
 {
   while(Serial.available()) {
     auto str = Serial.readString();
-    
+
     if (str.length() == 8) {
       long r = strtol(&str.substring(0, 2)[0], NULL, 16);
       long g = strtol(&str.substring(2, 4)[0], NULL, 16);
@@ -75,7 +75,7 @@ void handleColorChangeRequest()
   // long b = server.arg("blue").toInt();
   // long g = server.arg("green").toInt();
   // long seat = server.arg("seat").toInt();
-  
+
   // auto color = light.Update(seat, r, b, g);
 
   // server.send(200, "application/json", buildJsonResponse(color));
@@ -87,7 +87,7 @@ void setup() {
   network.Begin();
   light.Begin();
 
-  network.onLedChange([&] (uint8_t r, uint8_t g, uint8_t b, uint8_t seat) { 
+  network.onLedChange([&] (uint8_t r, uint8_t g, uint8_t b, uint8_t seat) {
     Serial.println("led_request");
     auto c = light.Update(seat, r, g, b);
     //return std::unique_ptr<RgbwColor>(new RgbwColor(0));
@@ -96,7 +96,7 @@ void setup() {
   // network.onLedChange([] () {
   //   Serial.println("nothing");
   // });
-  
+
   sensors.begin();
   numberOfTempSensor = sensors.getDeviceCount();
   Serial.print("Found ");
@@ -110,7 +110,7 @@ void setup() {
 void loop() {
 
   sensors.requestTemperatures();
-  
+
   for(auto i = 0; i < numberOfTempSensor; i ++) {
     if (sensors.getAddress(tempDeviceAddress, i)) {
       Serial.print("Temperature for device: ");
