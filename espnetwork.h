@@ -9,6 +9,11 @@
 #include <WiFiServer.h>
 #include <NeoPixelBus.h>
 #include <functional>
+#include <sstream>
+#include <string>
+#include "util.h"
+
+namespace carlight {
 
 namespace {
 
@@ -23,10 +28,10 @@ class EspNetwork {
       uint8_t r, uint8_t g, uint8_t b, uint8_t seat)> TLedChangeHandler;
 
   EspNetwork(const char* ap_name, const char* ap_password,
-      const IPAddress& ip) : ap_name_(ap_name), ap_password_(ap_password), 
+      const IPAddress& ip) : ap_name_(ap_name), ap_password_(ap_password),
       ip_(ip), subnet_(255, 255, 255, 0),
       server_(SERVER_PORT) {}
-  
+
   IPAddress Begin() {
     WiFi.mode(WIFI_AP);
     if (!WiFi.softAP(ap_name_, ap_password_, 1, 0, 10)) {
@@ -51,25 +56,22 @@ class EspNetwork {
   }
 
   void onLedChange(TLedChangeHandler handler) {
-    server_.on("/led", [=] () {
+    server_.on("/led", [=] () -> void {
       uint8_t r = server_.arg("red").toInt();
       uint8_t b = server_.arg("blue").toInt();
       uint8_t g = server_.arg("green").toInt();
       uint8_t seat = server_.arg("seat").toInt();
-      Serial.println("r" + String(r) + ":b" + String(b) + ":g" + String(g));
-      
+
       auto c = handler(r, g, b, seat);
-      String respond = "{\"red\":\"" + String(c->R) + "\",\"blue\":\""
-              + String(c->B) + "\",\"green\":\""
-              + String(c->G) + "\",\"white\":\""
-              + String(c->W) + "\", \"seat\":\""
-              + String(seat) + "\"}";
-      Serial.println(respond);
-      return respond;
+      auto respond = util::ColorToJson(*c.get(), seat);
+      Serial.println(respond.c_str());
+      Serial.println();
+      server_.send(200, "Application/json", respond.c_str());
+      //return respond;
     });
     server_.begin();
   }
-  
+
  private:
   void SetupServer() {
     SPIFFS.begin();
@@ -83,5 +85,7 @@ class EspNetwork {
   const IPAddress ip_;
   const IPAddress subnet_;
 };
+
+} //carlight
 
 #endif

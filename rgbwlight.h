@@ -9,22 +9,28 @@
 #include <EEPROM.h>
 #include <NeoPixelBus.h>
 #include <Preferences.h>
+#include <sstream>
+#include <string>
+
+namespace carlight {
 
 class RbgwLight {
-  
+
  public:
   typedef NeoPixelBus<NeoGrbwFeature, NeoSk6812Method> Strip;
 
-  RbgwLight(uint16_t gpio, uint16_t seat_count) : 
-      seat_count_(seat_count), 
+  RbgwLight(uint16_t gpio, uint16_t seat_count) :
+      seat_count_(seat_count),
       strip_(Strip(seat_count * LED_PER_SEAT, gpio)) {
   }
 
   ~RbgwLight() {
   }
-  
+
   void Begin() {
     strip_.Begin();
+
+    Serial.println("creating light");
 
     preferences.begin(APP_NAME, false);
     char key[] = {0, 0};
@@ -45,6 +51,10 @@ class RbgwLight {
   }
 
   std::unique_ptr<RgbwColor> Update(uint16_t seat, uint16_t r, uint16_t g, uint16_t b) {
+    std::ostringstream ss;
+    ss << "Updating: r:" << r << ", g:" << g
+       << ", b:" << b << ", seat:" << seat;
+    Serial.println(ss.str().c_str());
     auto color = rgbwFromRgb(r, g, b);
     SaveColor(seat * 2, *color);
     strip_.SetPixelColor(seat * 2, *color);
@@ -53,9 +63,9 @@ class RbgwLight {
     strip_.Show();
     return color;
   }
-    
+
  private:
-  
+
   void SaveColor(uint16_t led_pos, const RgbwColor& color) {
     preferences.begin(APP_NAME, false);
     char key[] = {led_pos, 0};
@@ -111,12 +121,12 @@ class RbgwLight {
     long r = floor(ir - lum);
     long g = floor(ig - lum);
     long b = floor(ib - lum);
-    
+
     w = boundValue(w, 0L, 255L);
     r = boundValue(r, 0L, 255L);
     g = boundValue(g, 0L, 255L);
     b = boundValue(b, 0L, 255L);
-    
+
     return std::unique_ptr<RgbwColor>(new RgbwColor(r, g, b, w));
   }
 
@@ -124,5 +134,7 @@ class RbgwLight {
   Preferences preferences;
   const uint16_t seat_count_;
 };
+
+} //carlight
 
 #endif
