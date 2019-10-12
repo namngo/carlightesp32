@@ -55,7 +55,7 @@ void handleSerialRequest()
       long seat = strtol(&str.substring(6, 8)[0], NULL, 16);
 
       auto c = light.Update(seat, r, b, g);
-      Serial.println(util::ColorToJson(*c).c_str());
+      Serial.println(util::ColorToJson(c).c_str());
     }
   }
 }
@@ -66,10 +66,20 @@ void setup() {
   network.Begin();
   light.Begin();
 
-  network.onLedChange([&] (uint8_t r, uint8_t g, uint8_t b, uint8_t seat) {
+  network.on("/led", HTTP_POST, [&] (WebServer& server_) -> std::string {
+    uint8_t r = server_.arg("red").toInt();
+    uint8_t b = server_.arg("blue").toInt();
+    uint8_t g = server_.arg("green").toInt();
+    uint8_t seat = server_.arg("seat").toInt();
+
     auto c = light.Update(seat, r, g, b);
-    return c;
+    util::SaveColor(r, g, b, seat * 2);
+    util::SaveColor(r, g, b, seat * 2 + 1);
+    auto respond = util::ColorToJson(c, seat);
+    return respond;
   });
+
+  network.StartWebServer();
 
   sensors.begin();
   numberOfTempSensor = sensors.getDeviceCount();

@@ -27,6 +27,8 @@ class EspNetwork {
   typedef std::function<std::unique_ptr<RgbwColor>(
       uint8_t r, uint8_t g, uint8_t b, uint8_t seat)> TLedChangeHandler;
 
+  typedef std::function<std::string(WebServer&)> TRequestHandler;
+
   EspNetwork(const char* ap_name, const char* ap_password,
       const IPAddress& ip) : ap_name_(ap_name), ap_password_(ap_password),
       ip_(ip), subnet_(255, 255, 255, 0),
@@ -55,21 +57,18 @@ class EspNetwork {
     server_.handleClient();
   }
 
-  void onLedChange(TLedChangeHandler handler) {
-    server_.on("/led", [=] () -> void {
-      uint8_t r = server_.arg("red").toInt();
-      uint8_t b = server_.arg("blue").toInt();
-      uint8_t g = server_.arg("green").toInt();
-      uint8_t seat = server_.arg("seat").toInt();
-
-      auto c = handler(r, g, b, seat);
-      auto respond = util::ColorToJson(*c.get(), seat);
-      Serial.println(respond.c_str());
-      Serial.println();
-      server_.send(200, "Application/json", respond.c_str());
-      //return respond;
-    });
+  void StartWebServer() {
     server_.begin();
+  }
+
+  void on(const String& uri, HTTPMethod method, TRequestHandler fn) {
+    server_.on(uri, method, [=] () -> void {
+      Serial.println("request: " + uri);
+      auto respond = fn(server_);
+      server_.send(200, "Application/json", respond.c_str());
+      Serial.println("->");
+      Serial.println(respond.c_str());
+    });
   }
 
  private:
