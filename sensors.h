@@ -22,7 +22,26 @@ class Sensor {
       dallas_(&dallas_onewire_)
      {}
   
-  void Setup() {
+  void Begin() {
+    dallas_.begin();
+    num_of_dallas_ = dallas_.getDeviceCount();
+    dht_.begin();
+  }
+
+  std::vector<float> ReadDHT() {
+    std::vector<float> r = {dht_.readTemperature(), dht_.readHumidity()};
+    return r;
+  }
+
+  std::vector<float> ReadDallas() {
+    std::vector<float> r;
+    r.reserve(num_of_dallas_);
+    dallas_.requestTemperatures();
+    for(int i = 0; i < num_of_dallas_; i ++) {
+      r.push_back(dallas_.getTempF())
+    }
+
+    return r;
 
   }
 
@@ -34,6 +53,8 @@ class Sensor {
   OneWire dallas_onewire_;
   DallasTemperature dallas_;
   DHT dht_;
+  uint8_t num_of_dallas_;
+  DeviceAddress
 
 };
 
