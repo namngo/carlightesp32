@@ -1,5 +1,8 @@
+
+
 #include "Arduino.h"
 
+#include <ArduinoJson.h>
 #include <NeoPixelAnimator.h>
 #include <NeoPixelBrightnessBus.h>
 #include <NeoPixelBus.h>
@@ -19,10 +22,11 @@
 #include "rgbwlight.h"
 #include "espnetwork.h"
 #include "util.h"
+#include "sensors.h"
 
 using namespace carlight;
 
-const uint16_t PixelCount = 4;
+const uint16_t SeatCount = 2;
 const uint16_t LedOutGPIO = 22; // D22
 const uint16_t TemperatureGPIO = 2;
 
@@ -31,7 +35,7 @@ const char ap_password[] = "hondaaccord";
 const IPAddress ip(192, 168, 4, 1);
 
 
-RbgwLight light(LedOutGPIO, 2);
+RbgwLight light(LedOutGPIO, SeatCount);
 EspNetwork network(ap_name, ap_password, ip);
 
 OneWire oneWire(TemperatureGPIO);
@@ -66,16 +70,27 @@ void setup() {
   network.Begin();
   light.Begin();
 
-  network.on("/led", HTTP_POST, [&] (WebServer& server_) -> std::string {
+  network.on("/ledchange", HTTP_GET, [&] (WebServer& server_) -> std::string {
     uint8_t r = server_.arg("red").toInt();
     uint8_t b = server_.arg("blue").toInt();
     uint8_t g = server_.arg("green").toInt();
     uint8_t seat = server_.arg("seat").toInt();
+    RgbColor rgb_color(r, g, b);
 
-    auto c = light.Update(seat, r, g, b);
-    util::SaveColor(r, g, b, seat * 2);
-    util::SaveColor(r, g, b, seat * 2 + 1);
+    auto c = light.Update(seat, rgb_color);
+    util::SaveColor(rgb_color, seat * 2);
+    util::SaveColor(rgb_color, seat * 2 + 1);
     auto respond = util::ColorToJson(c, seat);
+    return respond;
+  });
+
+  network.on("/led", HTTP_GET, [&] (WebServer& server_) -> std::string {
+    std::string respond("[");
+    for(int i = 0; i < light.led_count; i ++) {
+      auto c = util::GetSavedColor(i);
+      respond = respond + util::ColorToJson(c, i) + ",";
+    }
+    respond = respond + "]";
     return respond;
   });
 

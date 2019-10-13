@@ -11,6 +11,7 @@
 #include <Preferences.h>
 #include <sstream>
 #include <string>
+#include "util.h"
 
 namespace carlight {
 
@@ -21,6 +22,7 @@ class RbgwLight {
 
   RbgwLight(uint16_t gpio, uint16_t seat_count) :
       seat_count_(seat_count),
+      led_count(seat_count * LED_PER_SEAT),
       strip_(Strip(seat_count * LED_PER_SEAT, gpio)) {
   }
 
@@ -29,8 +31,16 @@ class RbgwLight {
 
   void Begin() {
     strip_.Begin();
+    for (int i = 0; i < seat_count_ * LED_PER_SEAT; i ++) {
+      auto c = util::GetSavedColor(i);
+      Update(i / 2, c.R, c.G, c.B);
+    }
 
     strip_.Show();
+  }
+
+  RgbwColor Update(uint16_t seat, const RgbColor& c) {
+    return Update(seat, c.R, c.G, c.B);
   }
 
   RgbwColor Update(uint16_t seat, uint16_t r, uint16_t g, uint16_t b) {
@@ -45,20 +55,16 @@ class RbgwLight {
     return color;
   }
 
-  RgbwColor GetColor(uint16_t seat) {
-
-  }
+  const uint16_t led_count;
 
  private:
   template <class T>
-  T getMin(const T a, const T b, const T c) const
-  {
+  T getMin(const T a, const T b, const T c) const {
     return std::min(a, std::min(b, c));
   }
 
   template <class T>
-  T getMax(const T a, const T b, const T c) const
-  {
+  T getMax(const T a, const T b, const T c) const {
     return std::max(a, std::max(b, c));
   }
 
