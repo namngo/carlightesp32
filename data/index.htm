@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="static/jquery-3.2.1.min.js"></script>
+        <script src="static/jquery-3.4.1.min.js"></script>
+        <script src="static/popper.min.js"></script>
         <script src="static/bootstrap.min.js"></script>
         <script src="static/colorpicker.min.js"></script>
 
+        <link rel="stylesheet" type="text/css" href="static/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="static/colorpicker.min.css">
     </head>
     <body>
@@ -28,23 +30,63 @@
                 height: 30px;
             }
         </style>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="card">
+                    <div class="card-header">
+                        <a class="btn" data-toggle="collapse" href="#collapse_env" role="button" aria-expanded="false" aria-controls="collapse_env">
+                            <h4 class="mb-0">
+                                <div class="d-block p-2"><p class="float-left">Temperature: <span>30.5</span></p></div>
+                                <div class="d-block p-2"><p class="float-left">Humidity: <span>80%</span></p></div>
+                            </h4>
+                        </a>
+                    </div>
+                    <div class="collapse" id="collapse_env">
+                        <div class="card-body">
+                            <p>Temperatures: 40.32, 23.34, 32.00</p>
+                            <p>Humidity: </p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    Driver seat
+                    <input type="color" id="color_driver">
+                </div>
+                <div>
+                    Passenger seat
+                    <input type="color" id="color_passenger">
+                </div>
+                <div>
+                    Glove box
+                    <input type="color" id="color_glove">
+                </div>
+                <div>
+                    Driver side
+                    <input type="color" id="color_driver_side">
+                </div>
+                <div>
+                    Passenger side
+                    <input type="color" id="color_passenger_side">
+                </div>
+           </div>
+        </div>
 
+            <input type="color">
          <h1>Hello</h1>
 
         <div id="colorpicker" class="inl-bl">
-            
         </div>
         <div>
-        <button id="submitColorBtn">Submit</button>
-        <button id="offColorBtn">Off</button>
+            <button id="submitColorBtn">Submit</button>
+            <button id="offColorBtn">Off</button>
         </div>
-        
+
 
         <script type="text/javascript">
             function submitColor() {
                 var color = $("#colorpicker").data().colorpicker.color.toRGB();
-                var url = "/ledchange?red=" + color.r + "&blue=" + color.b + 
-                          "&green=" + color.g + "&alpha=" + color.a + 
+                var url = "/ledchange?red=" + color.r + "&blue=" + color.b +
+                          "&green=" + color.g + "&alpha=" + color.a +
                           "&seat=0";
                 $.get(url);
             }
