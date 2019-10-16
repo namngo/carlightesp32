@@ -1,4 +1,7 @@
 {
+    "files.exclude": {
+      "output/": true,
+    },
     "files.associations": {
       "iosfwd": "cpp",
       "sstream": "cpp",

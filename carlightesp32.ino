@@ -15,6 +15,9 @@
 #include <WiFiUdp.h>
 
 #include <string>
+#include <vector>
+#include <sstream>
+#include <string>
 
 #include "Arduino.h"
 #include "FS.h"
@@ -22,12 +25,15 @@
 #include "rgbwlight.h"
 #include "sensors.h"
 #include "util.h"
+#include "EspSensor.h"
 
 using namespace carlight;
 
 const uint16_t SeatCount = 2;
 const uint16_t LedOutGPIO = 22;  // D22
-const uint16_t TemperatureGPIO = 2;
+const uint16_t TemperatureGPIO = 16;
+const uint16_t DHTGPIO = 21;
+const uint16_t LightSensorGPIO = 19;
 
 const char ap_name[] = "nango_car_led";
 const char ap_password[] = "hondaaccord";
@@ -35,15 +41,7 @@ const IPAddress ip(192, 168, 4, 1);
 
 RbgwLight light(LedOutGPIO, SeatCount);
 EspNetwork network(ap_name, ap_password, ip);
-
-OneWire oneWire(TemperatureGPIO);
-DallasTemperature sensors(&oneWire);
-
-// Number of temperature devices found
-int numberOfTempSensor;
-
-// We'll use this variable to store a found device address
-DeviceAddress tempDeviceAddress;
+EspSensor sensor(TemperatureGPIO, DHTGPIO);
 
 void handleSerialRequest() {
   while (Serial.available()) {
@@ -66,6 +64,7 @@ void setup() {
   Serial.begin(115200);
   network.Begin();
   light.Begin();
+  sensor.Begin();
 
   network.on("/ledchange", HTTP_GET, [&](WebServer& server_) -> std::string {
     uint8_t r = server_.arg("red").toInt();
@@ -91,33 +90,24 @@ void setup() {
     return respond;
   });
 
+  network.on("/sensors", HTTP_GET, [&](WebServer& server_) -> std::string {
+    bool f_temp = server_.arg("f_temp") == "true";
+    auto temps = sensor.ReadTemperature(f_temp);
+    auto humidity = sensor.ReadHumidity();
+    std::stringstream ss;
+    ss << "{\"temps\":[";
+    for(const auto& temp: temps) {
+      ss << temp << ",";
+    }
+    ss << "],\"humidity\":" << humidity << "}";
+    return ss.str();
+  });
+
   network.StartWebServer();
-
-  sensors.begin();
-  numberOfTempSensor = sensors.getDeviceCount();
-  Serial.print("Found ");
-  Serial.print(numberOfTempSensor, DEC);
-  Serial.println("Devices");
-
-  Serial.println();
 }
 
 // the loop function runs over and over again forever
 void loop() {
-  sensors.requestTemperatures();
-
-  for (auto i = 0; i < numberOfTempSensor; i++) {
-    if (sensors.getAddress(tempDeviceAddress, i)) {
-      Serial.print("Temperature for device: ");
-      Serial.println(i, DEC);
-      // Print the data
-      float tempC = sensors.getTempC(tempDeviceAddress);
-      Serial.print("Temp C: ");
-      Serial.print(tempC);
-      Serial.print(" Temp F: ");
-      Serial.println(DallasTemperature::toFahrenheit(tempC));
-    }
-  }
   network.Loop();
   handleSerialRequest();
 }

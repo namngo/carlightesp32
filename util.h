@@ -46,7 +46,7 @@ class util {
     Serial.println("saving: " + pos + ", value: " + String(hc.Color));
 
     Preferences preferences;
-    preferences.begin(APP_NAME, false);
+    preferences.begin(CAR_APP_NAME, false);
 
     preferences.putUInt(pos.c_str(), hc.Color);
     preferences.end();
@@ -56,7 +56,7 @@ class util {
     String pos = "led_" + String(led_pos);
 
     Preferences preferences;
-    preferences.begin(APP_NAME, false);
+    preferences.begin(CAR_APP_NAME, false);
 
     uint32_t color_int = preferences.getUInt(pos.c_str());
 
