@@ -1,124 +1,135 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <script src="static/jquery-3.4.1.min.js"></script>
-        <script src="static/popper.min.js"></script>
-        <script src="static/bootstrap.min.js"></script>
-        <script src="static/colorpicker.min.js"></script>
 
-        <link rel="stylesheet" type="text/css" href="static/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="static/colorpicker.min.css">
-    </head>
-    <body>
-        <style>
-            .inl-bl {
-                display: inline-block;
-            }
-            .colorpicker-2x .colorpicker-saturation {
-                width: 200px;
-                height: 200px;
-            }
+<head>
+  <script src="static/jquery-3.4.1.min.js"></script>
+  <script src="static/popper.min.js"></script>
+  <script src="static/bootstrap.min.js"></script>
+  <script src="static/colorpicker.min.js"></script>
 
-            .colorpicker-2x .colorpicker-hue,
-            .colorpicker-2x .colorpicker-alpha {
-                width: 30px;
-                height: 200px;
-            }
+  <link rel="stylesheet" type="text/css" href="static/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="static/colorpicker.min.css">
+</head>
 
-            .colorpicker-2x .colorpicker-color,
-            .colorpicker-2x .colorpicker-color div {
-                height: 30px;
-            }
-        </style>
-        <div class="container-fluid">
-            <div class="row">
-                <div class="card">
-                    <div class="card-header">
-                        <a class="btn" data-toggle="collapse" href="#collapse_env" role="button" aria-expanded="false" aria-controls="collapse_env">
-                            <h4 class="mb-0">
-                                <div class="d-block p-2"><p class="float-left">Temperature: <span>30.5</span></p></div>
-                                <div class="d-block p-2"><p class="float-left">Humidity: <span>80%</span></p></div>
-                            </h4>
-                        </a>
-                    </div>
-                    <div class="collapse" id="collapse_env">
-                        <div class="card-body">
-                            <p>Temperatures: 40.32, 23.34, 32.00</p>
-                            <p>Humidity: </p>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    Driver seat
-                    <input type="color" id="color_driver">
-                </div>
-                <div>
-                    Passenger seat
-                    <input type="color" id="color_passenger">
-                </div>
-                <div>
-                    Glove box
-                    <input type="color" id="color_glove">
-                </div>
-                <div>
-                    Driver side
-                    <input type="color" id="color_driver_side">
-                </div>
-                <div>
-                    Passenger side
-                    <input type="color" id="color_passenger_side">
-                </div>
-           </div>
+<body>
+  <style>
+    .inl-bl {
+      display: inline-block;
+    }
+
+    .colorpicker-2x .colorpicker-saturation {
+      width: 200px;
+      height: 200px;
+    }
+
+    .colorpicker-2x .colorpicker-hue,
+    .colorpicker-2x .colorpicker-alpha {
+      width: 30px;
+      height: 200px;
+    }
+
+    .colorpicker-2x .colorpicker-color,
+    .colorpicker-2x .colorpicker-color div {
+      height: 30px;
+    }
+  </style>
+  <div class="container-fluid">
+    <div class="row alert alert-success">
+      <div class="col">
+        <a class="" data-toggle="collapse" href="#collapse_env" role="button" aria-expanded="false" aria-controls="collapse_env">
+          <h4>Temperature / Humidity</h4>
+        </a>
+       </div>
+        <div class="col">
+          <h4>30.5 F / 80%</h4>
         </div>
-
-            <input type="color">
-         <h1>Hello</h1>
-
-        <div id="colorpicker" class="inl-bl">
+    </div>
+    <div class="row">
+      <div class="collapse" id="collapse_env">
+        <div class="card-body">
+          <p>Temperatures: 40.32, 23.34, 32.00</p>
+          <p>Humidity: </p>
         </div>
-        <div>
-            <button id="submitColorBtn">Submit</button>
-            <button id="offColorBtn">Off</button>
-        </div>
+      </div>
+    </div>
+    <div class="row alert alert-primary">
+      <div class="col">
+        <h4>Driver seat</h4>
+      </div>
+      <div class="col"> <input type="color" class="form-control form-control-lg" id="color_driver"> </div>
+    </div>
+    <div class="row alert alert-primary">
+      <div class="col">
+        <h4>Passenger seat</h4>
+      </div>
+      <div class="col"> <input type="color" class="form-control form-control-lg" id="color_passenger"> </div>
+    </div>
+    <div class="row alert alert-primary">
+      <div class="col">
+        <h4>Glove box</h4>
+      </div>
+      <div class="col"> <input type="color" class="form-control form-control-lg" id="color_glove"> </div>
+    </div>
+    <div class="row alert alert-primary">
+      <div class="col">
+        <h4>Driver back</h4>
+      </div>
+      <div class="col"><input type="color" class="form-control form-control-lg" id="color_driver_back"></div>
+    </div>
+    <div class="row alert alert-primary">
+      <div class="col">
+        <h4>Passenger back</h4>
+      </div>
+      <div class="col"><input type="color" class="form-control form-control-lg" id="color_passenger_back"></div>
+    </div>
+  </div>
 
 
-        <script type="text/javascript">
-            function submitColor() {
-                var color = $("#colorpicker").data().colorpicker.color.toRGB();
-                var url = "/ledchange?red=" + color.r + "&blue=" + color.b +
-                          "&green=" + color.g + "&alpha=" + color.a +
-                          "&seat=0";
-                $.get(url);
-            }
+  <div id="colorpicker" class="inl-bl">
+  </div>
+  <div>
+    <button id="submitColorBtn">Submit</button>
+    <button id="offColorBtn">Off</button>
+  </div>
 
-            function turnOffLed() {
-                var url = "/ledchange?red=0&blue=0&green=0&alpha=0";
-                $.get(url);
-            }
 
-            $(document).ready(function ()
-            {
-                 $('#colorpicker').colorpicker({
-                    container: true,
-                    inline: true,
-                    customClass: 'colorpicker-2x',
-                    sliders: {
-                        saturation: {
-                            maxLeft: 200,
-                            maxTop: 200
-                        },
-                        hue: {
-                            maxTop: 200
-                        },
-                        alpha: {
-                            maxTop: 200
-                        }
-                    }
-                });
-                $('#submitColorBtn').on('click', submitColor);
-                $('#offColorBtn').on('click', turnOffLed);
-            });
-        </script>
+  <script type="text/javascript">
+    function submitColor() {
+      var color = $("#colorpicker").data().colorpicker.color.toRGB();
+      var url = "/ledchange?red=" + color.r + "&blue=" + color.b +
+        "&green=" + color.g + "&alpha=" + color.a +
+        "&seat=0";
+      $.get(url);
+    }
 
-    </body>
+    function turnOffLed() {
+      var url = "/ledchange?red=0&blue=0&green=0&alpha=0";
+      $.get(url);
+    }
+
+    $(document).ready(function () {
+      $('#colorpicker').colorpicker({
+        container: true,
+        inline: true,
+        customClass: 'colorpicker-2x',
+        sliders: {
+          saturation: {
+            maxLeft: 200,
+            maxTop: 200
+          },
+          hue: {
+            maxTop: 200
+          },
+          alpha: {
+            maxTop: 200
+          }
+        }
+      });
+      $('#submitColorBtn').on('click', submitColor);
+      $('#offColorBtn').on('click', turnOffLed);
+    });
+  </script>
+
+</body>
+
 </html>

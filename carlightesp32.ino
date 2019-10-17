@@ -23,7 +23,6 @@
 #include "FS.h"
 #include "espnetwork.h"
 #include "rgbwlight.h"
-#include "sensors.h"
 #include "util.h"
 #include "EspSensor.h"
 
