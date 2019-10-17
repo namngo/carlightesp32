@@ -56,7 +56,7 @@ class util {
     String pos = "led_" + String(led_pos);
 
     Preferences preferences;
-    preferences.begin(CAR_APP_NAME, false);
+    preferences.begin(CAR_APP_NAME, true);
 
     uint32_t color_int = preferences.getUInt(pos.c_str());
 
