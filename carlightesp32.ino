@@ -96,17 +96,17 @@ void handleSerialRequest() {
   }
 }
 
-String GetSetting() {
+String GetLed() {
   Preferences p;
   p.begin(CAR_APP_NAME, false);
-  auto setting = p.getString("setting", "");
-  if (setting == "") {
+  auto led_setting = p.getString("setting", "");
+  if (led_setting == "") {
     p.putString("setting", CarLight_Default_Setting);
-    setting = CarLight_Default_Setting;
+    led_setting = CarLight_Default_Setting;
   }
   p.end();
 
-  return setting;
+  return led_setting;
 }
 
 // the setup function runs once when you press reset or power the board
@@ -159,7 +159,7 @@ void setup() {
   controller.onGetJson(
       "/api/setting",
       [&](const String &url, const IServer::ParamMap &params) -> String {
-        return GetSetting();
+        return GetLed();
       });
 
   controller.Begin();
