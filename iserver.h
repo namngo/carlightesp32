@@ -15,13 +15,16 @@ class IServer {
   typedef std::map<String, String> ParamMap;
   typedef std::function<String(const String& url, const String& body_json)>
       TJsonPostHandler;
-  typedef std::function<String(const String& url, const ParamMap& params,
-                               const String& body_json)>
+  typedef std::function<String(const String& url, const ParamMap& params)>
       TJsonGettHandler;
 
-  virtual void onGetJson(String url, TJsonGettHandler handler);
+  virtual void Begin();
 
-  virtual void onPostJson(String url, TJsonPostHandler handler);
+  virtual void onGetJson(const String& url, TJsonGettHandler handler);
+
+  virtual void onPostJson(const String& url, TJsonPostHandler handler);
+
+  virtual void Loop();
 };
 }  // namespace carlight
 

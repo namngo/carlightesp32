@@ -21,9 +21,12 @@
 
 #include "Arduino.h"
 #include "FS.h"
+#include "esp_controller.h"
 #include "esp_sensor.h"
 #include "esp_wifi_server.h"
+#include "iserver.h"
 #include "rgbwlight.h"
+#include "serial_server.h"
 #include "util.h"
 
 using namespace carlight;
@@ -39,10 +42,9 @@ const char ap_password[] = "hondaaccord";
 const IPAddress ip(192, 168, 4, 1);
 
 RbgwLight light(LedOutGPIO, SeatCount);
-EspWifiServer network(ap_name, ap_password, ip);
 EspSensor sensor(TemperatureGPIO, DHTGPIO);
 
-const char* CarLight_Default_Setting = R"(
+const char *CarLight_Default_Setting = R"(
 {
   "led_total": 5,
   "leds": [
@@ -76,6 +78,8 @@ const char* CarLight_Default_Setting = R"(
 }
 )";
 
+Controller controller;
+
 void handleSerialRequest() {
   while (Serial.available()) {
     auto str = Serial.readString();
@@ -108,55 +112,62 @@ String GetSetting() {
 // the setup function runs once when you press reset or power the board
 void setup() {
   Serial.begin(115200);
-  network.Begin();
   light.Begin();
   sensor.Begin();
 
-  network.on("/ledchange", HTTP_GET, [&](WebServer& server_) -> String {
-    uint8_t r = server_.arg("red").toInt();
-    uint8_t b = server_.arg("blue").toInt();
-    uint8_t g = server_.arg("green").toInt();
-    uint8_t seat = server_.arg("seat").toInt();
-    RgbColor rgb_color(r, g, b);
+  controller.addServer(std::make_unique<SerialServer>());
+  controller.addServer(
+      std::make_unique<EspWifiServer>(ap_name, ap_password, ip));
 
-    auto c = light.Update(seat, rgb_color);
-    util::SaveColor(rgb_color, seat * 2);
-    util::SaveColor(rgb_color, seat * 2 + 1);
-    auto respond = util::ColorToJson(c, seat);
-    return respond.c_str();
-  });
+  // network.on("/ledchange", HTTP_GET, [&](WebServer &server_) -> String {
+  //   uint8_t r = server_.arg("red").toInt();
+  //   uint8_t b = server_.arg("blue").toInt();
+  //   uint8_t g = server_.arg("green").toInt();
+  //   uint8_t seat = server_.arg("seat").toInt();
+  //   RgbColor rgb_color(r, g, b);
 
-  network.on("/led", HTTP_GET, [&](WebServer& server_) -> String {
-    std::string respond("[");
-    for (int i = 0; i < light.led_count; i++) {
-      auto c = util::GetSavedColor(i);
-      respond = respond + util::ColorToJson(c, i) + ",";
-    }
-    respond = respond + "]";
-    return respond.c_str();
-  });
+  //   auto c = light.Update(seat, rgb_color);
+  //   util::SaveColor(rgb_color, seat * 2);
+  //   util::SaveColor(rgb_color, seat * 2 + 1);
+  //   auto respond = util::ColorToJson(c, seat);
+  //   return respond.c_str();
+  // });
 
-  network.on("/sensor", HTTP_GET, [&](WebServer& server_) -> String {
-    bool f_temp = server_.arg("f_temp") == "true";
-    auto temps = sensor.ReadTemperature(f_temp);
-    auto humidity = sensor.ReadHumidity();
-    std::stringstream ss;
-    ss << "{\"temps\":[";
-    for (const auto& temp : temps) {
-      ss << temp << ",";
-    }
-    ss << "],\"humidity\":" << humidity << "}";
-    return ss.str().c_str();
-  });
+  // network.on("/led", HTTP_GET, [&](WebServer &server_) -> String {
+  //   std::string respond("[");
+  //   for (int i = 0; i < light.led_count; i++) {
+  //     auto c = util::GetSavedColor(i);
+  //     respond = respond + util::ColorToJson(c, i) + ",";
+  //   }
+  //   respond = respond + "]";
+  //   return respond.c_str();
+  // });
 
-  network.on("/setting", HTTP_GET,
-             [&](WebServer& server_) -> String { return GetSetting(); });
+  // network.on("/sensor", HTTP_GET, [&](WebServer &server_) -> String {
+  //   bool f_temp = server_.arg("f_temp") == "true";
+  //   auto temps = sensor.ReadTemperature(f_temp);
+  //   auto humidity = sensor.ReadHumidity();
+  //   std::stringstream ss;
+  //   ss << "{\"temps\":[";
+  //   for (const auto &temp : temps) {
+  //     ss << temp << ",";
+  //   }
+  //   ss << "],\"humidity\":" << humidity << "}";
+  //   return ss.str().c_str();
+  // });
 
-  network.StartWebServer();
+  controller.onGetJson(
+      "/api/setting",
+      [&](const String &url, const IServer::ParamMap &params) -> String {
+        return GetSetting();
+      });
+
+  controller.Begin();
 }
 
 // the loop function runs over and over again forever
 void loop() {
-  network.Loop();
-  handleSerialRequest();
+  controller.Loop();
+  // network.Loop();
+  // handleSerialRequest();
 }
