@@ -7,7 +7,7 @@
 #include <Preferences.h>
 #include "Arduino.h"
 
-#define CAR_APP_NAME "CarLightSetting"
+#define CAR_SETTING_APP_NAME "CarLight"
 
 const size_t Json_Setting_Capacity = JSON_ARRAY_SIZE(5) + JSON_OBJECT_SIZE(2) +
                                      10 * JSON_OBJECT_SIZE(3) +
@@ -32,7 +32,7 @@ class EspSetting {
     return GetKey(key, "#00000");
   }
 
-  void SetSeatColor(int16_t seat, String color) {
+  void SetSeatColor(int16_t seat, const String& color) {
     String key = "SeatColor_" + String(seat);
     SetKey(key, color);
   }
@@ -57,22 +57,19 @@ class EspSetting {
   // }
 
  private:
-  String GetKey(const String key, String defaultValue = String()) {
-    Preferences p;
-    p.begin(CAR_APP_NAME, true);
-    const auto ret = p.getString(key.c_str());
-    Serial.println("Getting key: '" + key + "' with value:'" + ret + "'");
-    p.end();
+  String GetKey(const String& key, String defaultValue = String()) {
+    Preferences p_;
+    p_.begin(CAR_SETTING_APP_NAME, true);
+    const auto ret = p_.getString(key.c_str());
+    p_.end();
     return ret;
   }
 
-  void SetKey(const String key, const String value) {
-    Preferences p;
-    p.begin(CAR_APP_NAME, true);
-    Serial.println("Setting key: '" + key + "' with value: '" + value + "'");
-    const auto ret = p.putString(key.c_str(), value);
-    Serial.println("Result of setting key:" + String(ret));
-    p.end();
+  void SetKey(const String& key, const String value) {
+    Preferences p_;
+    p_.begin(CAR_SETTING_APP_NAME, false);
+    const auto ret = p_.putString(key.c_str(), value);
+    p_.end();
   }
 
   EspSetting() {}

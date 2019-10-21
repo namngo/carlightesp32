@@ -28,15 +28,7 @@ class RbgwLight {
 
   ~RbgwLight() {}
 
-  void Begin() {
-    strip_.Begin();
-    for (int i = 0; i < seat_count_ * LED_PER_SEAT; i++) {
-      auto c = util::GetSavedColor(i);
-      Update(i / 2, c.R, c.G, c.B);
-    }
-
-    strip_.Show();
-  }
+  void Begin() { strip_.Begin(); }
 
   RgbwColor Update(uint16_t seat, const RgbColor& c) {
     return Update(seat, c.R, c.G, c.B);
