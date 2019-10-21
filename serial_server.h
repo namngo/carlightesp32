@@ -13,11 +13,11 @@ namespace carlight {
 class SerialServer : public IServer {
   void Begin() {}
 
-  void onGetJson(const String& url, TJsonGettHandler handler) {
+  void onGetJson(const String& url, TJsonHandler handler) {
     Serial.println("setting up get:" + url);
   }
 
-  void onPostJson(const String& url, TJsonPostHandler handler) {
+  void onPostJson(const String& url, TJsonHandler handler) {
     Serial.println("setting up post:" + url);
   }
 

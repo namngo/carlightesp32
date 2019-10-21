@@ -16,13 +16,13 @@ class IServer {
   typedef std::function<String(const String& url, const String& body_json)>
       TJsonPostHandler;
   typedef std::function<String(const String& url, const ParamMap& params)>
-      TJsonGettHandler;
+      TJsonHandler;
 
   virtual void Begin();
 
-  virtual void onGetJson(const String& url, TJsonGettHandler handler);
+  virtual void onGetJson(const String& url, TJsonHandler handler);
 
-  virtual void onPostJson(const String& url, TJsonPostHandler handler);
+  virtual void onPostJson(const String& url, TJsonHandler handler);
 
   virtual void Loop();
 };

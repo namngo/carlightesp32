@@ -84,9 +84,43 @@
               <div class="col">
                 <h4>${led.name}</h4>
               </div>
-              <div class="col"> <input type="color" class="form-control form-control-lg" id="led_${led.index}"> </div>
+              <div class="col">
+                <input type="color" id="led_${led.index}"
+                        class="form-control form-control-lg seat_color"
+                        data-index="${led.index}">
+              </div>
             </div>
             `);
+        });
+      });
+
+      $("#main_body").append(
+        `<div class="row alert alert-primary">
+              <div class="col">
+                <h4>Test led</h4>
+              </div>
+              <div class="col">
+                <input type="color" id="led_0"
+                        class="form-control form-control-lg seat_color"
+                        data-index="0">
+              </div>
+            </div>
+            `);
+
+
+      $('#main_body').on('input', '.seat_color', function (event) {
+        var color = event.target.value;
+        if (color.startsWith('#')) {
+          color = color.substring(2);
+        }
+        var seat = event.target.getAttribute("data-index");
+        var url = `/api/ledchange?seat=${seat}&color=${color}`;
+        // $.get(url, (data) => {
+        //   alert(data.color);
+        // });
+
+        $.post("/api/led", { seat: seat, color: color }).done(data => {
+          alert(data.color);
         });
       });
 

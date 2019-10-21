@@ -29,7 +29,7 @@ class Controller : public IServer {
     }
   }
 
-  void onGetJson(const String &url, TJsonGettHandler handler) {
+  void onGetJson(const String &url, TJsonHandler handler) {
     for (const auto &srv : servers_) {
       if (srv.get() != nullptr) {
         srv.get()->onGetJson(url, handler);
@@ -37,7 +37,7 @@ class Controller : public IServer {
     }
   }
 
-  void onPostJson(const String &url, TJsonPostHandler handler) {
+  void onPostJson(const String &url, TJsonHandler handler) {
     for (const auto &srv : servers_) {
       if (srv.get() != nullptr) {
         srv.get()->onPostJson(url, handler);

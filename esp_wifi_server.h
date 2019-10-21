@@ -75,23 +75,34 @@ class EspWifiServer : public IServer {
     });
   }
 
-  void onGetJson(const String &url, TJsonGettHandler handler) {
-    server_.on(url, HTTP_GET, [=]() -> void {
-      const auto& current_url = server_.uri();
-      Serial.println("request_get: " + current_url);
-      std::map<String, String> params;
-      for (auto i = 0; i < server_.args(); i++) {
-        params.insert(std::make_pair(server_.argName(i), server_.arg(i)));
-      }
-      auto response = handler(current_url, params);
-      Serial.println(response);
-      server_.send(200, "Application/json", response);
-    });
+  void onGetJson(const String &url, TJsonHandler handler) {
+    server_.on(url, HTTP_GET,
+               [=]() -> void { handleRequest(true, server_, handler); });
   }
 
-  void onPostJson(const String &url, TJsonPostHandler handler) {}
+  void onPostJson(const String &url, TJsonHandler handler) {
+    server_.on(url, HTTP_POST,
+               [=]() -> void { handleRequest(false, server_, handler); });
+  }
 
  private:
+  void handleRequest(bool get, WebServer &server_,
+                     const TJsonHandler &handler) {
+    const auto &current_url = server_.uri();
+    if (get) {
+      Serial.println("request_get: " + current_url);
+    } else {
+      Serial.println("request_post: " + current_url);
+    }
+    std::map<String, String> params;
+    for (auto i = 0; i < server_.args(); i++) {
+      params.insert(std::make_pair(server_.argName(i), server_.arg(i)));
+      Serial.println(server_.argName(i) + "->" + server_.arg(i));
+    }
+    auto response = handler(current_url, params);
+    Serial.println(response);
+    server_.send(200, "Application/json", response);
+  }
   WebServer server_;
   DNSServer dnsServer_;
   const char *ap_name_;
