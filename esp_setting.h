@@ -27,16 +27,14 @@ class EspSetting {
   void operator=(EspSetting const&) = delete;
   EspSetting(EspSetting const&) = delete;
 
-  ~EspSetting() { p_.end(); }
-
   String GetSeatColor(int16_t seat) {
-    const String key = "SeatColor_" + String(seat);
-    return p_.getString(key.c_str(), "#000000");
+    String key = "SeatColor_" + String(seat);
+    return GetKey(key, "#00000");
   }
 
-  void SetSeatColor(int16_t seat, const String& color) {
-    const String key = "SeatColor_" + String(seat);
-    p_.putString(key.c_str(), color);
+  void SetSeatColor(int16_t seat, String color) {
+    String key = "SeatColor_" + String(seat);
+    SetKey(key, color);
   }
 
   // String GetLedConfig(const String& def) {
@@ -59,8 +57,25 @@ class EspSetting {
   // }
 
  private:
-  EspSetting() : p_() { p_.begin(CAR_APP_NAME, false); }
-  Preferences p_;
+  String GetKey(const String key, String defaultValue = String()) {
+    Preferences p;
+    p.begin(CAR_APP_NAME, true);
+    const auto ret = p.getString(key.c_str());
+    Serial.println("Getting key: '" + key + "' with value:'" + ret + "'");
+    p.end();
+    return ret;
+  }
+
+  void SetKey(const String key, const String value) {
+    Preferences p;
+    p.begin(CAR_APP_NAME, true);
+    Serial.println("Setting key: '" + key + "' with value: '" + value + "'");
+    const auto ret = p.putString(key.c_str(), value);
+    Serial.println("Result of setting key:" + String(ret));
+    p.end();
+  }
+
+  EspSetting() {}
 };
 
 }  // namespace carlight

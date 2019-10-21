@@ -13,9 +13,9 @@ namespace carlight {
 class IServer {
  public:
   typedef std::map<String, String> ParamMap;
-  typedef std::function<String(const String& url, const String& body_json)>
+  typedef std::function<String(const String& url, String& body_json)>
       TJsonPostHandler;
-  typedef std::function<String(const String& url, const ParamMap& params)>
+  typedef std::function<String(const String& url, ParamMap& params)>
       TJsonHandler;
 
   virtual void Begin();

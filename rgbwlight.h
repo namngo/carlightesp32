@@ -43,15 +43,21 @@ class RbgwLight {
   }
 
   RgbwColor Update(uint16_t seat, uint16_t r, uint16_t g, uint16_t b) {
-    std::ostringstream ss;
-    ss << "Updating: r:" << r << ", g:" << g << ", b:" << b
-       << ", seat:" << seat;
-    Serial.println(ss.str().c_str());
     auto color = rgbwFromRgb(r, g, b);
     strip_.SetPixelColor(seat * 2, color);
     strip_.SetPixelColor(seat * 2 + 1, color);
     strip_.Show();
     return color;
+  }
+
+  RgbwColor Update(uint16_t seat, const String& color_str) {
+    HtmlColor h_c;
+    auto parse_result = h_c.Parse<HtmlColorNames>(color_str);
+    if (parse_result == 0) {
+      return RgbwColor();
+    }
+    RgbColor c(h_c);
+    return Update(seat, c.R, c.G, c.B);
   }
 
   const uint16_t led_count;

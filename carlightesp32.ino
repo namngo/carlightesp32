@@ -14,6 +14,8 @@
 #include <WiFiServer.h>
 #include <WiFiUdp.h>
 
+#include <functional>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -139,8 +141,18 @@ void setup() {
 
   controller.onGetJson(
       "/api/ledchange",
-      [&](const String& url, const IServer::ParamMap& params) -> String {
+      [&](const String& url, IServer::ParamMap& params) -> String {
         return "foo";
+      });
+
+  controller.onPostJson(
+      "/api/led", [&](const String& url, IServer::ParamMap& params) -> String {
+        int16_t seat = params["seat"].toInt();
+        auto color_str = params["color"];
+        light.Update(seat, color_str);
+        setting.SetSeatColor(seat, color_str);
+        return "{\"seat\":" + String(seat) + ",\"color\":\"" + color_str +
+               "\"}";
       });
 
   // network.on("/ledchange", HTTP_GET, [&](WebServer &server_) -> String {
