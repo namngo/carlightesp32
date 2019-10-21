@@ -133,6 +133,11 @@ String GetLed() {
 void setup() {
   Serial.begin(115200);
   light.Begin();
+
+  for (int i = 0; i < SeatCount; i++) {
+    light.Update(i, setting.GetSeatColor(i));
+  }
+
   sensor.Begin();
 
   controller.addServer(std::make_unique<SerialServer>());
@@ -154,30 +159,6 @@ void setup() {
         return "{\"seat\":" + String(seat) + ",\"color\":\"" + color_str +
                "\"}";
       });
-
-  // network.on("/ledchange", HTTP_GET, [&](WebServer &server_) -> String {
-  //   uint8_t r = server_.arg("red").toInt();
-  //   uint8_t b = server_.arg("blue").toInt();
-  //   uint8_t g = server_.arg("green").toInt();
-  //   uint8_t seat = server_.arg("seat").toInt();
-  //   RgbColor rgb_color(r, g, b);
-
-  //   auto c = light.Update(seat, rgb_color);
-  //   util::SaveColor(rgb_color, seat * 2);
-  //   util::SaveColor(rgb_color, seat * 2 + 1);
-  //   auto respond = util::ColorToJson(c, seat);
-  //   return respond.c_str();
-  // });
-
-  // network.on("/led", HTTP_GET, [&](WebServer &server_) -> String {
-  //   std::string respond("[");
-  //   for (int i = 0; i < light.led_count; i++) {
-  //     auto c = util::GetSavedColor(i);
-  //     respond = respond + util::ColorToJson(c, i) + ",";
-  //   }
-  //   respond = respond + "]";
-  //   return respond.c_str();
-  // });
 
   // network.on("/sensor", HTTP_GET, [&](WebServer &server_) -> String {
   //   bool f_temp = server_.arg("f_temp") == "true";
@@ -201,9 +182,4 @@ void setup() {
   controller.Begin();
 }
 
-// the loop function runs over and over again forever
-void loop() {
-  controller.Loop();
-  // network.Loop();
-  // handleSerialRequest();
-}
+void loop() { controller.Loop(); }

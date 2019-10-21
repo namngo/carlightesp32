@@ -30,10 +30,6 @@ class RbgwLight {
 
   void Begin() { strip_.Begin(); }
 
-  RgbwColor Update(uint16_t seat, const RgbColor& c) {
-    return Update(seat, c.R, c.G, c.B);
-  }
-
   RgbwColor Update(uint16_t seat, uint16_t r, uint16_t g, uint16_t b) {
     auto color = rgbwFromRgb(r, g, b);
     strip_.SetPixelColor(seat * 2, color);

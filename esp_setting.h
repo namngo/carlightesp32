@@ -37,25 +37,6 @@ class EspSetting {
     SetKey(key, color);
   }
 
-  // String GetLedConfig(const String& def) {
-  //   auto led_setting = p_.getString("LedConfig", def);
-  //   SettingJson json;
-  //   deserializeJson(json, led_setting);
-  //   json["led_total"] = GetTotalSeat();
-  //   String output;
-  //   serializeJson(json, output);
-  //   return output;
-  // }
-
-  // String GetConfig(const String& def) { return p_.getString("Config", def); }
-
-  // SettingJson GetJsonConfig(const String& def) {
-  //   auto setting = GetConfig(def);
-  //   SettingJson json;
-  //   deserializeJson(json, setting);
-  //   return json;
-  // }
-
  private:
   String GetKey(const String& key, String defaultValue = String()) {
     Preferences p_;
@@ -65,7 +46,7 @@ class EspSetting {
     return ret;
   }
 
-  void SetKey(const String& key, const String value) {
+  void SetKey(const String& key, const String& value) {
     Preferences p_;
     p_.begin(CAR_SETTING_APP_NAME, false);
     const auto ret = p_.putString(key.c_str(), value);

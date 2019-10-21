@@ -38,35 +38,6 @@ class util {
     ss << "}";
     return ss.str();
   }
-
-  static void SaveColor(const RgbColor& c, const uint8_t led_pos) {
-    HtmlColor hc(c);
-
-    String pos = "led_" + String(led_pos);
-    Serial.println("saving: " + pos + ", value: " + String(hc.Color));
-
-    Preferences preferences;
-    preferences.begin(CAR_APP_NAME, false);
-
-    preferences.putUInt(pos.c_str(), hc.Color);
-    preferences.end();
-  }
-
-  static RgbColor GetSavedColor(uint8_t led_pos) {
-    String pos = "led_" + String(led_pos);
-
-    Preferences preferences;
-    preferences.begin(CAR_APP_NAME, true);
-
-    uint32_t color_int = preferences.getUInt(pos.c_str());
-
-    preferences.end();
-
-    Serial.println("getting: " + pos + ", value: " + String(color_int));
-    HtmlColor hc(color_int);
-
-    return RgbColor(hc);
-  }
 };
 
 }  // namespace carlight
