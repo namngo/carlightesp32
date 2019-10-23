@@ -140,7 +140,8 @@ void setup() {
       });
 
   controller.onGetJson(
-      "/api/sensor", [&](const String& url, IServer::ParamMap& param) -> String {
+      "/api/sensor",
+      [&](const String& url, IServer::ParamMap& param) -> String {
         auto f_temps = sensor.ReadTemperature(true);
         auto c_temps = sensor.ReadTemperature(false);
         auto humidity = sensor.ReadHumidity();
@@ -153,7 +154,8 @@ void setup() {
           f_temp_json.add(temp);
           f_temp_sum += temp;
         }
-        doc["f_temp_avg"] = f_temp_sum / f_temps.size();
+        auto f_temp_avg = f_temp_sum / f_temps.size();
+        doc["f_temp_avg"] = serialized(String(f_temp_avg, 2));
 
         auto c_temp_json = doc.createNestedArray("c_temp");
         float c_temp_sum = 0;
@@ -161,7 +163,8 @@ void setup() {
           c_temp_json.add(temp);
           c_temp_sum += temp;
         }
-        doc["c_temp_avg"] = c_temp_sum / c_temps.size();
+        auto c_temp_avg = c_temp_sum / c_temps.size();
+        doc["c_temp_avg"] = serialized(String(c_temp_avg, 2));
 
         doc["humidity"] = humidity;
 

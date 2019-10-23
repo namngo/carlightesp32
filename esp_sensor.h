@@ -40,8 +40,8 @@ class EspSensor {
     r.reserve(num_of_dallas_ + 1);
 
     auto dht_temp = dht_.readTemperature();
-    if (dht_temp != NAN) {
-      // r.push_back(dht_temp);
+    if (!isnan(dht_temp)) {
+      r.push_back(dht_.readTemperature(f_temp));
     }
     da_.requestTemperatures();
     for (const auto* addr : da_addr_) {
