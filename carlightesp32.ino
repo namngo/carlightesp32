@@ -63,22 +63,22 @@ const char* CarLight_Config = R"(
       "color": ""
     },
     {
-      "index": 1,
+      "index": 2,
       "name": "Passenger front seat",
       "color": ""
     },
     {
-      "index": 2,
+      "index": 1,
       "name": "Glove box",
       "color": ""
     },
     {
-      "index": 3,
+      "index": 4,
       "name": "Driver back seat",
       "color": ""
     },
     {
-      "index": 4,
+      "index": 3,
       "name": "Passenger back seat",
       "color": ""
     }
@@ -87,22 +87,6 @@ const char* CarLight_Config = R"(
 )";
 
 Controller controller;
-
-void handleSerialRequest() {
-  while (Serial.available()) {
-    auto str = Serial.readString();
-    Serial.println("Got text:" + str);
-    if (str.length() == 8) {
-      long r = strtol(&str.substring(0, 2)[0], NULL, 16);
-      long g = strtol(&str.substring(2, 4)[0], NULL, 16);
-      long b = strtol(&str.substring(4, 6)[0], NULL, 16);
-      long seat = strtol(&str.substring(6, 8)[0], NULL, 16);
-
-      auto c = light.Update(seat, r, b, g);
-      Serial.println(util::ColorToJson(c).c_str());
-    }
-  }
-}
 
 // Loads the color of the led and fill them to the json
 String GetLed() {
@@ -117,9 +101,6 @@ String GetLed() {
 
   for (auto i = 0; i < SeatCount; i++) {
     int16_t cur_index = led_arr[i]["index"];
-    if (cur_index != i) {
-      return "mismatch current_index and led config index";
-    }
     led_arr[i]["color"] = setting.GetSeatColor(i);
   }
 
@@ -174,7 +155,7 @@ void setup() {
   // });
 
   controller.onGetJson(
-      "/api/setting",
+      "/api/ledsetting",
       [&](const String& url, const IServer::ParamMap& params) -> String {
         return GetLed();
       });

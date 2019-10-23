@@ -54,30 +54,9 @@
       </div>
     </div>
   </div>
-
-  <div id="colorpicker" class="inl-bl">
-  </div>
-  <div>
-    <button id="submitColorBtn">Submit</button>
-    <button id="offColorBtn">Off</button>
-  </div>
-
   <script type="text/javascript">
-    function submitColor() {
-      var color = $("#colorpicker").data().colorpicker.color.toRGB();
-      var url = "/ledchange?red=" + color.r + "&blue=" + color.b +
-        "&green=" + color.g + "&alpha=" + color.a +
-        "&seat=0";
-      $.get(url);
-    }
-
-    function turnOffLed() {
-      var url = "/ledchange?red=0&blue=0&green=0&alpha=0";
-      $.get(url);
-    }
-
     $(document).ready(function () {
-      $.getJSON("/api/setting", function (data) {
+      $.getJSON("/api/ledsetting", function (data) {
         data.leds.forEach((led) => {
           $("#main_body").append(
             `<div class="row alert alert-primary">
@@ -105,26 +84,6 @@
           event.target.color = '#000000';
         });
       });
-
-      $('#colorpicker').colorpicker({
-        container: true,
-        inline: true,
-        customClass: 'colorpicker-2x',
-        sliders: {
-          saturation: {
-            maxLeft: 200,
-            maxTop: 200
-          },
-          hue: {
-            maxTop: 200
-          },
-          alpha: {
-            maxTop: 200
-          }
-        }
-      });
-      $('#submitColorBtn').on('click', submitColor);
-      $('#offColorBtn').on('click', turnOffLed);
     });
   </script>
 
