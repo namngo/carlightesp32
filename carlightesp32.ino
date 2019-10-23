@@ -36,9 +36,13 @@ using namespace carlight;
 const size_t LED_CONFIG_CAP = JSON_ARRAY_SIZE(5) + JSON_OBJECT_SIZE(2) +
                               10 * JSON_OBJECT_SIZE(3) +
                               220;  // reserve for 10 seats
-typedef StaticJsonDocument<LED_CONFIG_CAP> SettingJson;
+typedef StaticJsonDocument<LED_CONFIG_CAP> LedSettingJson;
 
-const uint16_t SeatCount = 5;
+const size_t SENSOR_JSON_CAP =
+    2 * JSON_ARRAY_SIZE(7) + JSON_OBJECT_SIZE(5) + 60;
+typedef StaticJsonDocument<SENSOR_JSON_CAP> SensorJson;
+
+const uint16_t SEAT_COUNT = 5;
 const uint16_t LedOutGPIO = 22;  // D22
 const uint16_t TemperatureGPIO = 16;
 const uint16_t DHTGPIO = 21;
@@ -50,7 +54,7 @@ const IPAddress ip(192, 168, 4, 1);
 
 EspSetting& setting = EspSetting::get();
 
-RbgwLight light(LedOutGPIO, SeatCount);
+RbgwLight light(LedOutGPIO, SEAT_COUNT);
 EspSensor sensor(TemperatureGPIO, DHTGPIO);
 
 const char* CarLight_Config = R"(
@@ -90,16 +94,16 @@ Controller controller;
 
 // Loads the color of the led and fill them to the json
 String GetLed() {
-  SettingJson doc;
+  LedSettingJson doc;
   deserializeJson(doc, CarLight_Config);
-  doc["seat_total"] = SeatCount;
+  doc["seat_total"] = SEAT_COUNT;
 
   auto led_arr = doc["leds"].as<JsonArray>();
-  if (led_arr.size() != SeatCount) {
+  if (led_arr.size() != SEAT_COUNT) {
     return "mismatch SeatCount and led config";
   }
 
-  for (auto i = 0; i < SeatCount; i++) {
+  for (auto i = 0; i < SEAT_COUNT; i++) {
     int16_t cur_index = led_arr[i]["index"];
     led_arr[i]["color"] = setting.GetSeatColor(i);
   }
@@ -115,7 +119,7 @@ void setup() {
   Serial.begin(115200);
   light.Begin();
 
-  for (int i = 0; i < SeatCount; i++) {
+  for (int i = 0; i < SEAT_COUNT; i++) {
     light.Update(i, setting.GetSeatColor(i));
   }
 
@@ -124,12 +128,6 @@ void setup() {
   controller.addServer(std::make_unique<SerialServer>());
   controller.addServer(
       std::make_unique<EspWifiServer>(ap_name, ap_password, ip));
-
-  controller.onGetJson(
-      "/api/ledchange",
-      [&](const String& url, IServer::ParamMap& params) -> String {
-        return "foo";
-      });
 
   controller.onPostJson(
       "/api/led", [&](const String& url, IServer::ParamMap& params) -> String {
@@ -141,18 +139,37 @@ void setup() {
                "\"}";
       });
 
-  // network.on("/sensor", HTTP_GET, [&](WebServer &server_) -> String {
-  //   bool f_temp = server_.arg("f_temp") == "true";
-  //   auto temps = sensor.ReadTemperature(f_temp);
-  //   auto humidity = sensor.ReadHumidity();
-  //   std::stringstream ss;
-  //   ss << "{\"temps\":[";
-  //   for (const auto &temp : temps) {
-  //     ss << temp << ",";
-  //   }
-  //   ss << "],\"humidity\":" << humidity << "}";
-  //   return ss.str().c_str();
-  // });
+  controller.onGetJson(
+      "/api/sensor", [&](const String& url, IServer::ParamMap& param) -> String {
+        auto f_temps = sensor.ReadTemperature(true);
+        auto c_temps = sensor.ReadTemperature(false);
+        auto humidity = sensor.ReadHumidity();
+
+        SensorJson doc;
+
+        auto f_temp_json = doc.createNestedArray("f_temp");
+        float f_temp_sum = 0;
+        for (const auto& temp : f_temps) {
+          f_temp_json.add(temp);
+          f_temp_sum += temp;
+        }
+        doc["f_temp_avg"] = f_temp_sum / f_temps.size();
+
+        auto c_temp_json = doc.createNestedArray("c_temp");
+        float c_temp_sum = 0;
+        for (const auto& temp : c_temps) {
+          c_temp_json.add(temp);
+          c_temp_sum += temp;
+        }
+        doc["c_temp_avg"] = c_temp_sum / c_temps.size();
+
+        doc["humidity"] = humidity;
+
+        String sensor_resp;
+        serializeJson(doc, sensor_resp);
+
+        return sensor_resp;
+      });
 
   controller.onGetJson(
       "/api/ledsetting",

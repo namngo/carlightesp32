@@ -39,7 +39,10 @@ class EspSensor {
     std::vector<float> r;
     r.reserve(num_of_dallas_ + 1);
 
-    r.push_back(dht_.readTemperature(f_temp));
+    auto dht_temp = dht_.readTemperature();
+    if (dht_temp != NAN) {
+      // r.push_back(dht_temp);
+    }
     da_.requestTemperatures();
     for (const auto* addr : da_addr_) {
       if (f_temp) {
@@ -48,10 +51,31 @@ class EspSensor {
         r.push_back(da_.getTempC(addr));
       }
     }
+
+    if (f_temp) {
+      r.push_back(30.5);
+      r.push_back(31.5);
+      r.push_back(30.0);
+      r.push_back(31);
+      r.push_back(32);
+      r.push_back(31.7);
+      r.push_back(29.5);
+    } else {
+      r.push_back(-1);
+      r.push_back(-1.5);
+      r.push_back(0);
+      r.push_back(1.5);
+      r.push_back(1);
+      r.push_back(0.5);
+      r.push_back(0.75);
+    }
     return r;
   }
 
-  float ReadHumidity() { return dht_.readHumidity(); }
+  float ReadHumidity() {
+    // return dht_.readHumidity();
+    return 89;
+  }
 
  private:
   OneWire dallas_onewire_;
