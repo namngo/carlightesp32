@@ -38,19 +38,23 @@
       <div class="col">
         <a class="" data-toggle="collapse" href="#collapse_env" role="button" aria-expanded="false"
           aria-controls="collapse_env">
-          <h3>Temperature (F) / Humidity</h3>
+          <h1 class="display-2"><span id="temp_hum_short"></span></h1>
         </a>
-      </div>
-      <div class="col">
-        <h3><span id="temp_hum_short"></span></h3>
       </div>
     </div>
     <div class="row">
       <div class="collapse" id="collapse_env">
         <div class="card-body">
-          <p>Temperatures (F):&nbsp;<span id="f_temp"></span></p>
-          <p>Temperatures (C):&nbsp;<span id="c_temp"></span></p>
-          <p>Average Temperature (C):&nbsp;<span id="c_temp_short"></span></p>
+          <h1 class="display-3">
+            <p>Temperatures (F):&nbsp;<span id="f_temp"></span></p>
+          </h1>
+          <h1 class="display-3">
+            <p>Temperatures (C):&nbsp;<span id="c_temp"></span></p>
+          </h1>
+          <h1 class="display-3">
+            <p>Average Temperature (C):&nbsp;<span id="c_temp_short"></span></p>
+          </h1>
+          </h1>
         </div>
       </div>
     </div>
@@ -62,8 +66,9 @@
           $("#main_body").append(
             `<div class="row alert alert-primary">
               <div class="col">
-                <h3>${led.name}</h3>
+                <h1 class="display-2">${led.name}</h1>
               </div>
+              <div class="w-100"></div>
               <div class="col">
                 <input type="color" id="led_${led.index}"
                         class="form-control form-control-lg seat_color"
@@ -75,7 +80,7 @@
       });
 
       $.getJSON("/api/sensor", function (data) {
-        $("#temp_hum_short").text(`${data.f_temp_avg} / ${data.humidity}%`);
+        $("#temp_hum_short").text(`${data.f_temp_avg}F / ${data.humidity}%`);
         $("#f_temp").text(data.f_temp.join(", "));
         $("#c_temp").text(data.c_temp.join(", "));
         $("#c_temp_short").text(data.c_temp_avg);
