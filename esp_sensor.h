@@ -52,30 +52,27 @@ class EspSensor {
       }
     }
 
-    if (f_temp) {
-      r.push_back(30.5);
-      r.push_back(31.5);
-      r.push_back(30.0);
-      r.push_back(31);
-      r.push_back(32);
-      r.push_back(31.7);
-      r.push_back(29.5);
-    } else {
-      r.push_back(-1);
-      r.push_back(-1.5);
-      r.push_back(0);
-      r.push_back(1.5);
-      r.push_back(1);
-      r.push_back(0.5);
-      r.push_back(0.75);
-    }
+    // if (f_temp) {
+    //   r.push_back(30.5);
+    //   r.push_back(31.5);
+    //   r.push_back(30.0);
+    //   r.push_back(31);
+    //   r.push_back(32);
+    //   r.push_back(31.7);
+    //   r.push_back(29.5);
+    // } else {
+    //   r.push_back(-1);
+    //   r.push_back(-1.5);
+    //   r.push_back(0);
+    //   r.push_back(1.5);
+    //   r.push_back(1);
+    //   r.push_back(0.5);
+    //   r.push_back(0.75);
+    // }
     return r;
   }
 
-  float ReadHumidity() {
-    // return dht_.readHumidity();
-    return 89;
-  }
+  float ReadHumidity() { return dht_.readHumidity(); }
 
  private:
   OneWire dallas_onewire_;
