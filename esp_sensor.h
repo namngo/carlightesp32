@@ -6,6 +6,7 @@
 #include <DHT_U.h>
 #include <DallasTemperature.h>
 #include <OneWire.h>
+#include <vector>
 
 #include <vector>
 
@@ -15,13 +16,17 @@ namespace carlight {
 
 class EspSensor {
  public:
-  EspSensor(const uint16_t dallas_gpio, const uint16_t dht_gpio)
-      : dallas_onewire_(dallas_gpio),
-        dht_(dht_gpio, DHTTYPE),
-        da_(&dallas_onewire_) {}
+  EspSensor(const uint16_t dallas_gpio, const std::vector<uint16_t>& dht_gpios)
+      : dallas_onewire_(dallas_gpio), dhts_(), da_(&dallas_onewire_) {
+    for (auto gpio : dht_gpios) {
+      dhts_.push_back(DHT(gpio, DHTTYPE));
+    }
+  }
 
   void Begin() {
-    dht_.begin();
+    for (auto& dht_ : dhts_) {
+      dht_.begin();
+    }
     da_.begin();
     num_of_dallas_ = da_.getDeviceCount();
   }
@@ -30,9 +35,11 @@ class EspSensor {
     std::vector<float> r;
     r.reserve(num_of_dallas_ + 1);
 
-    auto dht_temp = dht_.readTemperature();
-    if (!isnan(dht_temp)) {
-      r.push_back(dht_.readTemperature(f_temp));
+    for (auto& dht_ : dhts_) {
+      auto dht_temp = dht_.readTemperature();
+      if (!isnan(dht_temp)) {
+        r.push_back(dht_.readTemperature(f_temp));
+      }
     }
     da_.requestTemperatures();
     DeviceAddress da_address;
@@ -48,12 +55,23 @@ class EspSensor {
     return r;
   }
 
-  float ReadHumidity() { return dht_.readHumidity(); }
+  float ReadHumidity() {
+    int sensor_count = 0;
+    float total_hums = 0;
+    for (auto& dht_ : dhts_) {
+      auto hum = dht_.readHumidity();
+      if (!isnan(hum)) {
+        total_hums += hum;
+        sensor_count++;
+      }
+    }
+    return total_hums / sensor_count;
+  }
 
  private:
   OneWire dallas_onewire_;
   DallasTemperature da_;
-  DHT dht_;
+  std::vector<DHT> dhts_;
   uint8_t num_of_dallas_;
 };
 

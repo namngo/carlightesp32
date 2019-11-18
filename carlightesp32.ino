@@ -44,9 +44,9 @@ typedef StaticJsonDocument<SENSOR_JSON_CAP> SensorJson;
 
 const uint16_t SEAT_COUNT = 5;
 const uint16_t LedOutGPIO = 22;  // D22
-const uint16_t TemperatureGPIO = 16;
-const uint16_t DHTGPIO = 21;
-const uint16_t LightSensorGPIO = 19;
+const uint16_t DallasGPIO = 16;
+const std::vector<uint16_t> DHTGPIOs = {21, 19};
+const uint16_t LightSensorGPIO = 18;
 
 const char ap_name[] = "nango_car_led";
 const char ap_password[] = "hondaaccord";
@@ -55,7 +55,7 @@ const IPAddress ip(192, 168, 4, 1);
 EspSetting& setting = EspSetting::get();
 
 RbgwLight light(LedOutGPIO, SEAT_COUNT);
-EspSensor sensor(TemperatureGPIO, DHTGPIO);
+EspSensor sensor(DallasGPIO, DHTGPIOs);
 
 const char* CarLight_Config = R"(
 {
