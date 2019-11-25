@@ -16,8 +16,12 @@ namespace carlight {
 
 class EspSensor {
  public:
-  EspSensor(const uint16_t dallas_gpio, const std::vector<uint16_t>& dht_gpios)
-      : dallas_onewire_(dallas_gpio), dhts_(), da_(&dallas_onewire_) {
+  EspSensor(uint16_t dallas_gpio, const std::vector<uint16_t>& dht_gpios,
+            uint16_t light_gpio)
+      : dallas_onewire_(dallas_gpio),
+        dhts_(),
+        da_(&dallas_onewire_),
+        light_gpio_(light_gpio) {
     for (auto gpio : dht_gpios) {
       dhts_.push_back(DHT(gpio, DHTTYPE));
     }
@@ -29,6 +33,7 @@ class EspSensor {
     }
     da_.begin();
     num_of_dallas_ = da_.getDeviceCount();
+    pinMode(light_gpio_, INPUT);
   }
 
   std::vector<float> ReadTemperature(bool f_temp = true) {
@@ -68,11 +73,14 @@ class EspSensor {
     return total_hums / sensor_count;
   }
 
+  uint16_t readBrightness() { return analogRead(light_gpio_); }
+
  private:
   OneWire dallas_onewire_;
   DallasTemperature da_;
   std::vector<DHT> dhts_;
   uint8_t num_of_dallas_;
+  uint16_t light_gpio_;
 };
 
 }  // namespace carlight

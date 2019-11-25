@@ -46,16 +46,10 @@
     <div class="row">
       <div class="collapse" id="collapse_env">
         <div class="card-body">
-          <h1 class="display-3">
-            <p>Temperatures (F):&nbsp;<span id="f_temp"></span></p>
-          </h1>
-          <h1 class="display-3">
-            <p>Temperatures (C):&nbsp;<span id="c_temp"></span></p>
-          </h1>
-          <h1 class="display-3">
-            <p>Average Temperature (C):&nbsp;<span id="c_temp_short"></span></p>
-          </h1>
-          </h1>
+          <p>Temperatures (F):&nbsp;<span id="f_temp"></span></p>
+          <p>Temperatures (C):&nbsp;<span id="c_temp"></span></p>
+          <p>Average Temperature (C):&nbsp;<span id="c_temp_short"></span></p>
+          <p>Brightness:&nbsp;<span id="brightness"></span></p>
         </div>
       </div>
     </div>
@@ -85,6 +79,7 @@
         $("#f_temp").text(data.f_temp.join(", "));
         $("#c_temp").text(data.c_temp.join(", "));
         $("#c_temp_short").text(data.c_temp_avg);
+        $("#brightness").text(data.brightness);
       });
 
       $('#main_body').on('input', '.seat_color', function (event) {
@@ -94,7 +89,6 @@
         $.post(post_url, { seat: seat, color: color }).done(data => {
           event.target.color = data.color;
         }).fail(err => {
-          alert(err);
           event.target.color = '#000000';
         });
       });

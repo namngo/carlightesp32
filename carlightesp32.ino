@@ -39,14 +39,14 @@ const size_t LED_CONFIG_CAP = JSON_ARRAY_SIZE(5) + JSON_OBJECT_SIZE(2) +
 typedef StaticJsonDocument<LED_CONFIG_CAP> LedSettingJson;
 
 const size_t SENSOR_JSON_CAP =
-    2 * JSON_ARRAY_SIZE(7) + JSON_OBJECT_SIZE(5) + 60;
+    2 * JSON_ARRAY_SIZE(7) + 2 * JSON_OBJECT_SIZE(5) + 60;
 typedef StaticJsonDocument<SENSOR_JSON_CAP> SensorJson;
 
 const uint16_t SEAT_COUNT = 5;
 const uint16_t LedOutGPIO = 22;  // D22
 const uint16_t DallasGPIO = 16;
 const std::vector<uint16_t> DHTGPIOs = {21, 19};
-const uint16_t LightSensorGPIO = 18;
+const uint16_t LightSensorGPIO = 34;
 
 const char ap_name[] = "nango_car_led";
 const char ap_password[] = "hondaaccord";
@@ -55,7 +55,7 @@ const IPAddress ip(192, 168, 4, 1);
 EspSetting& setting = EspSetting::get();
 
 RbgwLight light(LedOutGPIO, SEAT_COUNT);
-EspSensor sensor(DallasGPIO, DHTGPIOs);
+EspSensor sensor(DallasGPIO, DHTGPIOs, LightSensorGPIO);
 
 const char* CarLight_Config = R"(
 {
@@ -145,6 +145,7 @@ void setup() {
         auto f_temps = sensor.ReadTemperature(true);
         auto c_temps = sensor.ReadTemperature(false);
         auto humidity = sensor.ReadHumidity();
+        auto brightness = sensor.readBrightness();
 
         SensorJson doc;
 
@@ -167,6 +168,8 @@ void setup() {
         doc["c_temp_avg"] = serialized(String(c_temp_avg, 2));
 
         doc["humidity"] = humidity;
+
+        doc["brightness"] = brightness;
 
         String sensor_resp;
         serializeJson(doc, sensor_resp);
